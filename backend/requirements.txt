@@ -1,0 +1,4 @@
+django
+django-ninja
+psycopg2-binary
+django-cors-headers
