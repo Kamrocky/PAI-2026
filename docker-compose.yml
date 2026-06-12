@@ -10,6 +10,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d budget_db"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   web:
     build: ./backend
@@ -18,7 +23,8 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DEBUG=1
       - DB_NAME=budget_db
