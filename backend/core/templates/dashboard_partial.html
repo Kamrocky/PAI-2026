@@ -1,0 +1,37 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-3xl font-bold">Witaj, {{ username }}!</h2>
+        <button class="bg-red-500 text-white px-3 py-1 rounded" onclick="location.reload()">Wyloguj</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-green-50 border-l-4 border-green-500">
+            <h3 class="font-bold">Twoje Konta</h3>
+            {% for acc in accounts %}
+                <p>{{ acc.name }}: <span class="font-mono font-bold">{{ acc.balance }} {{ acc.currency }}</span></p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <h3 class="text-xl font-semibold mt-6">Ostatnie transakcje</h3>
+    <table class="w-full mt-2 border">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="p-2 text-left">Tytuł</th>
+                <th class="p-2 text-right">Kwota</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr class="border-b">
+                <td class="p-2">{{ t.title }}</td>
+                <td class="p-2 text-right {% if t.amount < 0 %}text-red-500{% else %}text-green-600{% endif %}">
+                    {{ t.amount }} zł
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="p-4 text-center">Brak transakcji</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

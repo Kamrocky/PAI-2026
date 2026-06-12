@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budżetówka - Docker & HTMX</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <nav class="bg-blue-600 p-4 text-white flex justify-between shadow-lg">
+        <span class="font-bold text-xl">Moje Finanse</span>
+        <div id="user-info">
+            <button hx-get="http://localhost:8000/api/auth/me" hx-target="#main-content" class="hover:underline">Sprawdź status</button>
+        </div>
+    </nav>
+
+    <main id="main-content" class="container mx-auto mt-10 p-6 bg-white rounded-xl shadow-md max-w-4xl">
+        <div id="login-form" class="text-center">
+            <h2 class="text-2xl font-bold mb-4">Zaloguj się</h2>
+            <form hx-post="http://localhost:8000/api/auth/login" 
+                  hx-target="#main-content" 
+                  class="space-y-4 max-w-xs mx-auto">
+                <input type="text" name="username" placeholder="Login" class="w-full border p-2 rounded">
+                <input type="password" name="password" placeholder="Hasło" class="w-full border p-2 rounded">
+                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Wjedź do bazy</button>
+            </form>
+<hr class="my-8">
+<div id="register-form" class="text-center">
+    <h2 class="text-xl font-bold mb-4">Nie masz konta? Zarejestruj się</h2>
+    <form hx-post="http://localhost:8000/api/auth/register" 
+          hx-target="#main-content" 
+          class="space-y-4 max-w-xs mx-auto text-sm">
+        <input type="text" name="username" placeholder="Nowy login" class="w-full border p-2 rounded">
+        <input type="email" name="email" placeholder="Email" class="w-full border p-2 rounded">
+        <input type="password" name="password" placeholder="Hasło" class="w-full border p-2 rounded">
+        <button type="submit" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-700">Stwórz konto</button>
+    </form>
+</div>
+        </div>
+    </main>
+
+</body>
+</html>
