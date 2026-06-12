@@ -16,12 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.views.generic import TemplateView
 
 from finance.api import api
+from finance.views import home
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="index.html"), name="home"),
+    path("", home, name="home"),
     path("admin/", admin.site.urls),
     path("api/", api.urls),
 ]

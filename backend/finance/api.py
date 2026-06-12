@@ -1,47 +1,88 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpResponse
-from django.shortcuts import render
-from ninja import NinjaAPI
+from ninja import Form, NinjaAPI
 
-from .models import Account, Transaction
+from .auth_utils import (
+    format_validation_error,
+    render_auth_page,
+    render_auth_success,
+    render_logout_success,
+    require_authenticated_user,
+)
 
 api = NinjaAPI()
 
 
 @api.post("/auth/login")
-def login_user(request, username: str = None, password: str = None):
-    user = authenticate(username=username, password=password)
+def login_user(request, username: str = Form(...), password: str = Form(...)):
+    username = username.strip()
+    if not username or not password:
+        return render_auth_page(request, error="Podaj login i hasło.")
+
+    user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return render(
-            request,
-            "dashboard_partial.html",
-            {
-                "username": user.username,
-                "accounts": Account.objects.filter(user=user),
-                "transactions": Transaction.objects.filter(account__user=user),
-            },
-        )
-    return HttpResponse("<p class='text-red-500'>Błędny login lub hasło!</p>")
+        request.session.cycle_key()
+        return render_auth_success(request, user)
+
+    return render_auth_page(request, error="Błędny login lub hasło.")
 
 
 @api.get("/auth/me")
 def check_me(request):
     if request.user.is_authenticated:
-        return f"Zalogowany jako: {request.user.username}"
-    return "Niezalogowany"
+        return HttpResponse(
+            f'<span class="text-white/90">Zalogowany jako: {request.user.username}</span>',
+        )
+    return HttpResponse('<span class="text-white/80">Niezalogowany</span>')
 
 
 @api.post("/auth/register")
-def register_user(request, username: str = None, password: str = None, email: str = None):
+def register_user(
+    request,
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(""),
+):
+    username = username.strip()
+    email = (email or "").strip()
+
+    if not username or not password:
+        return render_auth_page(request, error="Podaj login i hasło.")
+
     try:
-        user = User.objects.create_user(username=username, password=password, email=email)
-        login(request, user)
-        return "Konto utworzone! Możesz teraz przejść do Dashboardu."
-    except IntegrityError:
-        return HttpResponse(
-            "<p class='text-red-500'>Użytkownik o takiej nazwie już istnieje!</p>",
-            status=400,
+        validate_password(password, user=User(username=username, email=email))
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
         )
+        login(request, user)
+        request.session.cycle_key()
+        return render_auth_success(request, user)
+    except ValidationError as exc:
+        return render_auth_page(request, error=format_validation_error(exc))
+    except IntegrityError:
+        return render_auth_page(
+            request,
+            error="Użytkownik o takiej nazwie lub adresie e-mail już istnieje.",
+        )
+
+
+@api.post("/auth/logout")
+def logout_user(request):
+    if request.user.is_authenticated:
+        logout(request)
+    return render_logout_success(request)
+
+
+@api.get("/auth/protected-ping")
+def protected_ping(request):
+    user = require_authenticated_user(request)
+    if isinstance(user, HttpResponse):
+        return user
+    return HttpResponse(f"OK — witaj, {user.username}")

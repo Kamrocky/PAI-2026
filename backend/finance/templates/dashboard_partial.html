@@ -1,14 +1,15 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h2 class="text-3xl font-bold">Witaj, {{ username }}!</h2>
-        <button class="bg-red-500 text-white px-3 py-1 rounded" onclick="location.reload()">Wyloguj</button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="p-4 bg-green-50 border-l-4 border-green-500">
-            <h3 class="font-bold">Twoje Konta</h3>
+            <h3 class="font-bold">Twoje konta</h3>
             {% for acc in accounts %}
                 <p>{{ acc.name }}: <span class="font-mono font-bold">{{ acc.balance }} {{ acc.currency }}</span></p>
+            {% empty %}
+                <p class="text-gray-500 text-sm">Brak kont — dodaj je wkrótce w aplikacji.</p>
             {% endfor %}
         </div>
     </div>
@@ -30,7 +31,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="2" class="p-4 text-center">Brak transakcji</td></tr>
+            <tr><td colspan="2" class="p-4 text-center text-gray-500">Brak transakcji</td></tr>
             {% endfor %}
         </tbody>
     </table>
