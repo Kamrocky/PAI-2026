@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from ninja import Form, NinjaAPI
 
+from .api_categories import router as categories_router
 from .auth_utils import (
     format_validation_error,
     render_auth_page,
@@ -15,6 +16,7 @@ from .auth_utils import (
 )
 
 api = NinjaAPI()
+api.add_router("/categories", categories_router)
 
 
 @api.post("/auth/login")
