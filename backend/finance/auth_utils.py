@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
 from django.template.loader import render_to_string
+from ninja.errors import HttpError
 
 from .models import Account, Transaction
 
@@ -69,4 +69,11 @@ def require_authenticated_user(
     user = request.user
     if not user.is_authenticated or isinstance(user, AnonymousUser):
         return HttpResponse("Wymagane logowanie.", status=401)
+    return user
+
+
+def get_authenticated_user(request: HttpRequest) -> AbstractBaseUser:
+    user = require_authenticated_user(request)
+    if isinstance(user, HttpResponse):
+        raise HttpError(401, "Wymagane logowanie.")
     return user
