@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from pydantic import ConfigDict, field_validator
 
 from ninja import Schema
@@ -61,3 +63,60 @@ class CategoryOut(Schema):
     icon: str
     color: str
     is_income: bool
+
+
+class AccountIn(Schema):
+    name: str
+    balance: Decimal = Decimal("0.00")
+    currency: str = "PLN"
+
+    @field_validator("name")
+    @classmethod
+    def name_not_empty(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Nazwa konta nie może być pusta.")
+        return value
+
+    @field_validator("currency")
+    @classmethod
+    def currency_format(cls, value: str) -> str:
+        value = value.strip().upper()
+        if len(value) != 3 or not value.isalpha():
+            raise ValueError("Waluta musi być trzyliterowym kodem ISO, np. PLN.")
+        return value
+
+
+class AccountUpdate(Schema):
+    name: str | None = None
+    balance: Decimal | None = None
+    currency: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def name_not_empty(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Nazwa konta nie może być pusta.")
+        return value
+
+    @field_validator("currency")
+    @classmethod
+    def currency_format(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip().upper()
+        if len(value) != 3 or not value.isalpha():
+            raise ValueError("Waluta musi być trzyliterowym kodem ISO, np. PLN.")
+        return value
+
+
+class AccountOut(Schema):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    balance: Decimal
+    currency: str
