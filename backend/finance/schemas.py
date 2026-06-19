@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 
 from pydantic import ConfigDict, field_validator
@@ -120,3 +121,49 @@ class AccountOut(Schema):
     name: str
     balance: Decimal
     currency: str
+
+
+class TransactionIn(Schema):
+    account_id: int
+    category_id: int | None = None
+    amount: Decimal
+    title: str
+    description: str = ""
+
+    @field_validator("title")
+    @classmethod
+    def title_not_empty(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Tytuł transakcji nie może być pusty.")
+        return value
+
+
+class TransactionUpdate(Schema):
+    account_id: int | None = None
+    category_id: int | None = None
+    amount: Decimal | None = None
+    title: str | None = None
+    description: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def title_not_empty(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Tytuł transakcji nie może być pusty.")
+        return value
+
+
+class TransactionOut(Schema):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    account_id: int
+    category_id: int | None
+    amount: Decimal
+    title: str
+    description: str
+    date: datetime
