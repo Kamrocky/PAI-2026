@@ -1,7 +1,7 @@
 <section id="accounts-section" class="rounded-lg border border-gray-200 p-4">
     <h3 class="text-lg font-semibold text-gray-800">Konta</h3>
 
-    {% include "partials/form_errors.html" %}
+    {% include "partials/ui_alerts.html" %}
 
     <form hx-post="/api/ui/accounts"
           hx-target="#accounts-section"
@@ -11,11 +11,11 @@
         <p class="font-medium text-gray-700">Dodaj konto</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input type="text" name="name" placeholder="Nazwa konta" required
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="currency" value="PLN" placeholder="PLN" required
-                   maxlength="3" class="w-full rounded border p-2 font-mono uppercase">
+                   maxlength="3" class="w-full rounded border border-gray-300 p-2 font-mono uppercase focus:border-blue-500 focus:outline-none">
             <input type="text" name="balance" value="0.00" placeholder="Saldo początkowe"
-                   class="w-full rounded border p-2 font-mono">
+                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
         </div>
         <p class="text-xs text-gray-500">Saldo początkowe ustawiasz tylko przy tworzeniu konta. Później zmieniają je transakcje.</p>
         <button type="submit"
@@ -33,9 +33,9 @@
         <p class="font-medium text-gray-700">Edytuj: {{ editing_account.name }}</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" value="{{ editing_account.name }}" required
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="currency" value="{{ editing_account.currency }}" required
-                   maxlength="3" class="w-full rounded border p-2 font-mono uppercase">
+                   maxlength="3" class="w-full rounded border border-gray-300 p-2 font-mono uppercase focus:border-blue-500 focus:outline-none">
         </div>
         <p class="text-xs text-gray-600">
             Aktualne saldo:
@@ -94,7 +94,9 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="p-4 text-center text-gray-500">Brak kont</td>
+                    <td colspan="4" class="p-4 text-center text-gray-500">
+                        Brak kont — użyj formularza powyżej.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

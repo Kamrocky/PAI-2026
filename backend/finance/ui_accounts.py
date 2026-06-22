@@ -7,7 +7,7 @@ from .api_accounts import get_user_account
 from .auth_utils import get_authenticated_user
 from .models import Account
 from .schemas import AccountIn, AccountUpdate
-from .ui_utils import render_section_response
+from .ui_utils import TRANSACTIONS_SECTION, render_section_response
 
 router = Router(tags=["accounts-ui"])
 
@@ -63,7 +63,14 @@ def create_account_ui(
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
 
     Account.objects.create(user=user, **payload.model_dump())
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Konto zostało dodane.",
+        refresh_summary=True,
+        refresh_sections=[TRANSACTIONS_SECTION],
+    )
 
 
 @router.get("/{account_id}/edit")
@@ -100,7 +107,14 @@ def update_account_ui(
     account.name = payload.name
     account.currency = payload.currency
     account.save(update_fields=["name", "currency"])
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Konto zostało zaktualizowane.",
+        refresh_summary=True,
+        refresh_sections=[TRANSACTIONS_SECTION],
+    )
 
 
 @router.delete("/{account_id}")
@@ -108,4 +122,11 @@ def delete_account_ui(request, account_id: int):
     user = get_authenticated_user(request)
     account = get_user_account(user, account_id)
     account.delete()
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Konto zostało usunięte.",
+        refresh_summary=True,
+        refresh_sections=[TRANSACTIONS_SECTION],
+    )

@@ -1,3 +1,6 @@
+from collections import defaultdict
+from decimal import Decimal
+
 from django.contrib.auth.models import AbstractBaseUser
 from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
@@ -6,18 +9,43 @@ from .models import Account, Category, Transaction
 
 RECENT_TRANSACTIONS_LIMIT = 20
 
+SECTION_TEMPLATE_IDS = {
+    "partials/categories_section.html": "categories-section",
+    "partials/accounts_section.html": "accounts-section",
+    "partials/transactions_section.html": "transactions-section",
+}
+
+TRANSACTIONS_SECTION = "partials/transactions_section.html"
+
 
 def get_ui_context(user: AbstractBaseUser) -> dict:
+    accounts = list(Account.objects.filter(user=user).order_by("name"))
+    categories = list(Category.objects.filter(user=user).order_by("name"))
+    transactions = list(
+        Transaction.objects.filter(account__user=user)
+        .select_related("account", "category")
+        .order_by("-date", "-id")[:RECENT_TRANSACTIONS_LIMIT]
+    )
+
+    totals_by_currency: dict[str, Decimal] = defaultdict(lambda: Decimal("0.00"))
+    for account in accounts:
+        totals_by_currency[account.currency] += account.balance
+
     return {
         "username": user.username,
-        "accounts": Account.objects.filter(user=user).order_by("name"),
-        "categories": Category.objects.filter(user=user).order_by("name"),
-        "transactions": (
-            Transaction.objects.filter(account__user=user)
-            .select_related("account", "category")
-            .order_by("-date", "-id")[:RECENT_TRANSACTIONS_LIMIT]
-        ),
+        "accounts": accounts,
+        "categories": categories,
+        "transactions": transactions,
+        "totals_by_currency": dict(totals_by_currency),
     }
+
+
+def _inject_oob_swap(html: str, element_id: str) -> str:
+    needle = f'id="{element_id}"'
+    replacement = f'id="{element_id}" hx-swap-oob="outerHTML"'
+    if needle not in html:
+        return html
+    return html.replace(needle, replacement, 1)
 
 
 def render_dashboard_summary(
@@ -55,11 +83,14 @@ def render_section(
     template_name: str,
     *,
     error: str | None = None,
+    success: str | None = None,
     extra_context: dict | None = None,
 ) -> str:
     context = {**get_ui_context(user), **(extra_context or {})}
     if error:
         context["error"] = error
+    if success:
+        context["success"] = success
     return render_to_string(template_name, context, request=request)
 
 
@@ -69,17 +100,32 @@ def render_section_response(
     template_name: str,
     *,
     error: str | None = None,
+    success: str | None = None,
     extra_context: dict | None = None,
     refresh_summary: bool = False,
+    refresh_sections: list[str] | None = None,
 ) -> HttpResponse:
-    section_html = render_section(
-        request,
-        user,
-        template_name,
-        error=error,
-        extra_context=extra_context,
-    )
+    parts: list[str] = []
+
     if refresh_summary:
-        summary_oob = render_dashboard_summary(request, user, oob=True)
-        return HttpResponse(f"{summary_oob}{section_html}")
-    return HttpResponse(section_html)
+        parts.append(render_dashboard_summary(request, user, oob=True))
+
+    for section_template in refresh_sections or []:
+        if section_template == template_name:
+            continue
+        section_html = render_section(request, user, section_template)
+        element_id = SECTION_TEMPLATE_IDS.get(section_template)
+        if element_id:
+            parts.append(_inject_oob_swap(section_html, element_id))
+
+    parts.append(
+        render_section(
+            request,
+            user,
+            template_name,
+            error=error,
+            success=success,
+            extra_context=extra_context,
+        )
+    )
+    return HttpResponse("".join(parts))

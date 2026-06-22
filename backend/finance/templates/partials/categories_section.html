@@ -1,7 +1,7 @@
 <section id="categories-section" class="rounded-lg border border-gray-200 p-4">
     <h3 class="text-lg font-semibold text-gray-800">Kategorie</h3>
 
-    {% include "partials/form_errors.html" %}
+    {% include "partials/ui_alerts.html" %}
 
     <form hx-post="/api/ui/categories"
           hx-target="#categories-section"
@@ -11,11 +11,11 @@
         <p class="font-medium text-gray-700">Dodaj kategorię</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" placeholder="Nazwa" required
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="icon" placeholder="Ikona (opcjonalnie)"
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="color" value="#4CAF50" placeholder="#RRGGBB" required
-                   class="w-full rounded border p-2 font-mono">
+                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="is_income" value="true" class="rounded">
                 <span>Przychód</span>
@@ -36,11 +36,11 @@
         <p class="font-medium text-gray-700">Edytuj: {{ editing_category.name }}</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" value="{{ editing_category.name }}" required
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="icon" value="{{ editing_category.icon }}"
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <input type="text" name="color" value="{{ editing_category.color }}" required
-                   class="w-full rounded border p-2 font-mono">
+                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="is_income" value="true"
                        {% if editing_category.is_income %}checked{% endif %}
@@ -114,7 +114,9 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="p-4 text-center text-gray-500">Brak kategorii</td>
+                    <td colspan="4" class="p-4 text-center text-gray-500">
+                        Brak kategorii — użyj formularza powyżej.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

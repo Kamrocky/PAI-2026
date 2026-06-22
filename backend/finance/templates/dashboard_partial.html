@@ -3,14 +3,17 @@
         <h2 class="text-3xl font-bold text-gray-900">Witaj, {{ username }}!</h2>
     </div>
 
-    {% include "partials/form_errors.html" %}
-
     <div id="dashboard-summary">
         {% include "partials/dashboard_summary.html" %}
     </div>
 
     <div class="space-y-6 border-t border-gray-200 pt-6">
-        <h3 class="text-xl font-semibold text-gray-800">Zarządzanie</h3>
+        <div>
+            <h3 class="text-xl font-semibold text-gray-800">Zarządzanie</h3>
+            <p class="mt-1 text-sm text-gray-500">
+                Kategorie → Konta → Transakcje. Zmiany odświeżają podsumowanie u góry.
+            </p>
+        </div>
         {% include "partials/categories_section.html" %}
         {% include "partials/accounts_section.html" %}
         {% include "partials/transactions_section.html" %}

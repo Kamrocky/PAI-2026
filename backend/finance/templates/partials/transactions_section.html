@@ -1,7 +1,7 @@
 <section id="transactions-section" class="rounded-lg border border-gray-200 p-4">
     <h3 class="text-lg font-semibold text-gray-800">Transakcje</h3>
 
-    {% include "partials/form_errors.html" %}
+    {% include "partials/ui_alerts.html" %}
 
     {% if accounts %}
     <form hx-post="/api/ui/transactions"
@@ -10,11 +10,11 @@
           class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4 text-sm">
         {% csrf_token %}
         <p class="font-medium text-gray-700">Dodaj transakcję</p>
-        <p class="text-xs text-gray-500">Kwota ujemna = wydatek, dodatnia = przychód.</p>
+        <p class="text-xs text-gray-500">Kwota ujemna = wydatek, dodatnia = przychód. Kategoria jest opcjonalna.</p>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
                 <span class="mb-1 block text-xs text-gray-600">Konto</span>
-                <select name="account_id" required class="w-full rounded border p-2">
+                <select name="account_id" required class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
                     <option value="">— wybierz —</option>
                     {% for acc in accounts %}
                     <option value="{{ acc.id }}">{{ acc.name }} ({{ acc.balance }} {{ acc.currency }})</option>
@@ -23,7 +23,7 @@
             </label>
             <label class="block">
                 <span class="mb-1 block text-xs text-gray-600">Kategoria (opcjonalnie)</span>
-                <select name="category_id" class="w-full rounded border p-2">
+                <select name="category_id" class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
                     <option value="">— brak —</option>
                     {% for cat in categories %}
                     <option value="{{ cat.id }}">{{ cat.name }}</option>
@@ -31,11 +31,11 @@
                 </select>
             </label>
             <input type="text" name="title" placeholder="Tytuł" required
-                   class="w-full rounded border p-2 sm:col-span-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none sm:col-span-2">
             <input type="text" name="amount" placeholder="Kwota, np. -50.00" required
-                   class="w-full rounded border p-2 font-mono">
+                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
             <input type="text" name="description" placeholder="Opis (opcjonalnie)"
-                   class="w-full rounded border p-2">
+                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
         </div>
         <button type="submit"
                 class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
@@ -58,7 +58,7 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
                 <span class="mb-1 block text-xs text-gray-600">Konto</span>
-                <select name="account_id" required class="w-full rounded border p-2">
+                <select name="account_id" required class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
                     {% for acc in accounts %}
                     <option value="{{ acc.id }}"
                             {% if editing_transaction.account_id == acc.id %}selected{% endif %}>
@@ -69,7 +69,7 @@
             </label>
             <label class="block">
                 <span class="mb-1 block text-xs text-gray-600">Kategoria</span>
-                <select name="category_id" class="w-full rounded border p-2">
+                <select name="category_id" class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
                     <option value="">— brak —</option>
                     {% for cat in categories %}
                     <option value="{{ cat.id }}"
@@ -147,7 +147,13 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="p-4 text-center text-gray-500">Brak transakcji</td>
+                    <td colspan="6" class="p-4 text-center text-gray-500">
+                        {% if accounts %}
+                            Brak transakcji — użyj formularza powyżej.
+                        {% else %}
+                            Brak transakcji — najpierw dodaj konto.
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

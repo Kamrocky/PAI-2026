@@ -5,7 +5,7 @@ from .api_categories import get_user_category
 from .auth_utils import get_authenticated_user
 from .models import Category
 from .schemas import CategoryIn
-from .ui_utils import render_section_response
+from .ui_utils import TRANSACTIONS_SECTION, render_section_response
 
 router = Router(tags=["categories-ui"])
 
@@ -55,7 +55,13 @@ def create_category_ui(
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
 
     Category.objects.create(user=user, **payload.model_dump())
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Kategoria została dodana.",
+        refresh_summary=True,
+    )
 
 
 @router.get("/{category_id}/edit")
@@ -94,7 +100,14 @@ def update_category_ui(
     for field, value in payload.model_dump().items():
         setattr(category, field, value)
     category.save()
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Kategoria została zaktualizowana.",
+        refresh_summary=True,
+        refresh_sections=[TRANSACTIONS_SECTION],
+    )
 
 
 @router.delete("/{category_id}")
@@ -102,4 +115,11 @@ def delete_category_ui(request, category_id: int):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
     category.delete()
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Kategoria została usunięta.",
+        refresh_summary=True,
+        refresh_sections=[TRANSACTIONS_SECTION],
+    )

@@ -96,7 +96,13 @@ def create_transaction_ui(
         title=data["title"],
         description=data["description"],
     )
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Transakcja została dodana.",
+        refresh_summary=True,
+    )
 
 
 @router.get("/{transaction_id}/edit")
@@ -144,7 +150,13 @@ def update_transaction_ui(
         title=data["title"],
         description=data["description"],
     )
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Transakcja została zaktualizowana.",
+        refresh_summary=True,
+    )
 
 
 @router.delete("/{transaction_id}")
@@ -152,4 +164,10 @@ def delete_transaction_ui(request, transaction_id: int):
     user = get_authenticated_user(request)
     txn = get_user_transaction(user, transaction_id)
     delete_transaction(txn)
-    return render_section_response(request, user, SECTION_TEMPLATE, refresh_summary=True)
+    return render_section_response(
+        request,
+        user,
+        SECTION_TEMPLATE,
+        success="Transakcja została usunięta.",
+        refresh_summary=True,
+    )
