@@ -1,38 +1,21 @@
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-3xl font-bold">Witaj, {{ username }}!</h2>
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <h2 class="text-3xl font-bold text-gray-900">Witaj, {{ username }}!</h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 bg-green-50 border-l-4 border-green-500">
-            <h3 class="font-bold">Twoje konta</h3>
-            {% for acc in accounts %}
-                <p>{{ acc.name }}: <span class="font-mono font-bold">{{ acc.balance }} {{ acc.currency }}</span></p>
-            {% empty %}
-                <p class="text-gray-500 text-sm">Brak kont — dodaj je wkrótce w aplikacji.</p>
-            {% endfor %}
+    <div id="dashboard-summary">
+        {% include "partials/dashboard_summary.html" %}
+    </div>
+
+    <div class="space-y-6 border-t border-gray-200 pt-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-800">Zarządzanie</h3>
+            <p class="mt-1 text-sm text-gray-500">
+                Kategorie → Konta → Transakcje. Zmiany odświeżają podsumowanie u góry.
+            </p>
         </div>
+        {% include "partials/categories_section.html" %}
+        {% include "partials/accounts_section.html" %}
+        {% include "partials/transactions_section.html" %}
     </div>
-
-    <h3 class="text-xl font-semibold mt-6">Ostatnie transakcje</h3>
-    <table class="w-full mt-2 border">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="p-2 text-left">Tytuł</th>
-                <th class="p-2 text-right">Kwota</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for t in transactions %}
-            <tr class="border-b">
-                <td class="p-2">{{ t.title }}</td>
-                <td class="p-2 text-right {% if t.amount < 0 %}text-red-500{% else %}text-green-600{% endif %}">
-                    {{ t.amount }} zł
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="2" class="p-4 text-center text-gray-500">Brak transakcji</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
