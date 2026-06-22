@@ -1,0 +1,53 @@
+<div class="space-y-4">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="rounded-lg border-l-4 border-green-500 bg-green-50 p-4">
+            <h3 class="font-bold text-gray-800">Twoje konta</h3>
+            <div class="mt-2 space-y-1">
+                {% for acc in accounts %}
+                    <p class="text-sm">
+                        {{ acc.name }}:
+                        <span class="font-mono font-bold">{{ acc.balance }} {{ acc.currency }}</span>
+                    </p>
+                {% empty %}
+                    <p class="text-sm text-gray-500">Brak kont — dodaj je w sekcji poniżej.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="rounded-lg border-l-4 border-blue-500 bg-blue-50 p-4">
+            <h3 class="font-bold text-gray-800">Podsumowanie</h3>
+            <p class="mt-2 text-sm text-gray-600">
+                Kont: <span class="font-semibold">{{ accounts|length }}</span>
+                · Kategorii: <span class="font-semibold">{{ categories|length }}</span>
+                · Transakcji (ostatnie {{ transactions|length }}): wyświetlone poniżej
+            </p>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="text-lg font-semibold text-gray-800">Ostatnie transakcje</h3>
+        <table class="mt-2 w-full border text-sm">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="p-2 text-left">Tytuł</th>
+                    <th class="p-2 text-left">Konto</th>
+                    <th class="p-2 text-right">Kwota</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr class="border-b">
+                    <td class="p-2">{{ t.title }}</td>
+                    <td class="p-2 text-gray-600">{{ t.account.name }}</td>
+                    <td class="p-2 text-right {% if t.amount < 0 %}text-red-500{% else %}text-green-600{% endif %}">
+                        {{ t.amount }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="p-4 text-center text-gray-500">Brak transakcji</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
