@@ -4,15 +4,11 @@ from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from ninja.errors import HttpError
 
-from .models import Account, Transaction
+from .ui_utils import get_ui_context
 
 
 def get_dashboard_context(user):
-    return {
-        "username": user.username,
-        "accounts": Account.objects.filter(user=user),
-        "transactions": Transaction.objects.filter(account__user=user),
-    }
+    return get_ui_context(user)
 
 
 def render_user_info(request, *, logged_in: bool) -> str:

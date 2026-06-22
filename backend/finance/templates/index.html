@@ -34,13 +34,21 @@
         </div>
     </nav>
 
-    <main id="main-content" class="container mx-auto mt-10 p-6 bg-white rounded-xl shadow-md max-w-4xl">
+    <main id="main-content" class="container mx-auto mt-10 max-w-5xl rounded-xl bg-white p-6 shadow-md">
         {% if dashboard_context %}
-            {% include "dashboard_partial.html" with username=dashboard_context.username accounts=dashboard_context.accounts transactions=dashboard_context.transactions %}
+            {% include "dashboard_partial.html" with username=dashboard_context.username accounts=dashboard_context.accounts categories=dashboard_context.categories transactions=dashboard_context.transactions %}
         {% else %}
             {% include "partials/auth_forms.html" %}
         {% endif %}
     </main>
 
+    <script>
+        document.body.addEventListener("htmx:configRequest", (event) => {
+            const token = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+            if (token) {
+                event.detail.headers["X-CSRFToken"] = token;
+            }
+        });
+    </script>
 </body>
 </html>
