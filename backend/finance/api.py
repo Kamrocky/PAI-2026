@@ -11,6 +11,7 @@ from .api_categories import router as categories_router
 from .api_transactions import router as transactions_router
 from .ui_categories import router as categories_ui_router
 from .ui_accounts import router as accounts_ui_router
+from .ui_transactions import router as transactions_ui_router
 from .auth_utils import (
     format_validation_error,
     render_auth_page,
@@ -25,6 +26,7 @@ api.add_router("/accounts", accounts_router)
 api.add_router("/transactions", transactions_router)
 api.add_router("/ui/categories", categories_ui_router)
 api.add_router("/ui/accounts", accounts_ui_router)
+api.add_router("/ui/transactions", transactions_ui_router)
 
 
 @api.post("/auth/login")
