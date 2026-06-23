@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 
+from .constants import ALLOWED_CURRENCIES, CATEGORY_COLOR_PALETTE
 from .models import Account, Category, Transaction
 
 RECENT_TRANSACTIONS_LIMIT = 20
@@ -37,6 +38,8 @@ def get_ui_context(user: AbstractBaseUser) -> dict:
         "categories": categories,
         "transactions": transactions,
         "totals_by_currency": dict(totals_by_currency),
+        "allowed_currencies": ALLOWED_CURRENCIES,
+        "category_color_palette": CATEGORY_COLOR_PALETTE,
     }
 
 
