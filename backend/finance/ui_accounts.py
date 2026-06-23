@@ -32,12 +32,9 @@ def _validate_account_create(
     return payload, None
 
 
-def _validate_account_edit(
-    name: str,
-    currency: str,
-) -> tuple[AccountUpdate | None, str | None]:
+def _validate_account_edit(name: str) -> tuple[AccountUpdate | None, str | None]:
     try:
-        payload = AccountUpdate(name=name, currency=currency)
+        payload = AccountUpdate(name=name)
     except PydanticValidationError as exc:
         messages = [err["msg"] for err in exc.errors()]
         return None, "; ".join(messages)
@@ -90,11 +87,10 @@ def update_account_ui(
     request,
     account_id: int,
     name: str = Form(...),
-    currency: str = Form("PLN"),
 ):
     user = get_authenticated_user(request)
     account = get_user_account(user, account_id)
-    payload, error = _validate_account_edit(name, currency)
+    payload, error = _validate_account_edit(name)
     if error:
         return render_section_response(
             request,
@@ -105,8 +101,7 @@ def update_account_ui(
         )
 
     account.name = payload.name
-    account.currency = payload.currency
-    account.save(update_fields=["name", "currency"])
+    account.save(update_fields=["name"])
     return render_section_response(
         request,
         user,

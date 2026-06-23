@@ -95,6 +95,7 @@ def create_transaction_ui(
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
     return render_section_response(
         request,
@@ -149,6 +150,7 @@ def update_transaction_ui(
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
     return render_section_response(
         request,

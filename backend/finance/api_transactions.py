@@ -52,6 +52,7 @@ def create_transaction_endpoint(request, payload: TransactionIn):
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
 
 
@@ -75,6 +76,7 @@ def update_transaction_endpoint(request, transaction_id: int, payload: Transacti
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
 
 
@@ -105,6 +107,7 @@ def partial_update_transaction(
         amount=updates.get("amount", txn.amount),
         title=updates.get("title", txn.title),
         description=updates.get("description", txn.description),
+        date=updates.get("date"),
     )
 
 
