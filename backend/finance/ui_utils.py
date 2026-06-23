@@ -32,8 +32,10 @@ def get_ui_context(user: AbstractBaseUser) -> dict:
     for account in accounts:
         totals_by_currency[account.currency] += account.balance
 
+    from .auth_utils import get_display_name
+
     return {
-        "username": user.username,
+        "display_name": get_display_name(user),
         "accounts": accounts,
         "categories": categories,
         "transactions": transactions,

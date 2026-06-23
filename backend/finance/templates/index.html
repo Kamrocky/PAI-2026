@@ -13,7 +13,7 @@
         <a href="/" class="font-bold text-xl hover:underline">Moje Finanse</a>
         <div id="user-info" class="flex items-center gap-4">
             {% if user.is_authenticated %}
-                <span class="text-white/90">Witaj, {{ user.username }}</span>
+                <span class="text-white/90">Witaj, {{ display_name }}</span>
                 <form hx-post="/api/auth/logout"
                       hx-target="#main-content"
                       hx-swap="innerHTML"
@@ -36,7 +36,7 @@
 
     <main id="main-content" class="container mx-auto mt-10 max-w-5xl rounded-xl bg-white p-6 shadow-md">
         {% if dashboard_context %}
-            {% include "dashboard_partial.html" with username=dashboard_context.username accounts=dashboard_context.accounts categories=dashboard_context.categories transactions=dashboard_context.transactions %}
+            {% include "dashboard_partial.html" with display_name=dashboard_context.display_name accounts=dashboard_context.accounts categories=dashboard_context.categories transactions=dashboard_context.transactions totals_by_currency=dashboard_context.totals_by_currency %}
         {% else %}
             {% include "partials/auth_forms.html" %}
         {% endif %}
