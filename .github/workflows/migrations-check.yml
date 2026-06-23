@@ -41,6 +41,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
 
+      - name: Apply migrations
+        working-directory: backend
+        env:
+          DB_NAME: budget_db
+          DB_USER: user
+          DB_PASSWORD: password
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: ci-secret-key
+        run: python manage.py migrate
+
       - name: Check for missing migrations
         working-directory: backend
         env:
@@ -50,4 +61,4 @@ jobs:
           DB_HOST: localhost
           DB_PORT: 5432
           SECRET_KEY: ci-secret-key
-        run: python manage.py migrate --check
+        run: python manage.py makemigrations --check
