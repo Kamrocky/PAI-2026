@@ -28,7 +28,11 @@ def render_user_info(request, *, logged_in: bool) -> str:
         if logged_in
         else "partials/user_info_logged_out.html"
     )
-    return render_to_string(template, {"user": request.user}, request=request)
+    return render_to_string(
+        template,
+        {"user": request.user, "display_name": get_display_name(request.user)},
+        request=request,
+    )
 
 
 def render_auth_page(request, error: str | None = None) -> HttpResponse:
