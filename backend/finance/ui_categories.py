@@ -3,6 +3,7 @@ from ninja import Form, Router
 
 from .api_categories import get_user_category
 from .auth_utils import get_authenticated_user
+from .constants import DEFAULT_CATEGORY_COLOR
 from .models import Category
 from .schemas import CategoryIn
 from .ui_utils import TRANSACTIONS_SECTION, render_section_response
@@ -18,15 +19,13 @@ def _parse_is_income(value: str) -> bool:
 
 def _validate_category_form(
     name: str,
-    icon: str,
     color: str,
     is_income: str,
 ) -> tuple[CategoryIn | None, str | None]:
     try:
         payload = CategoryIn(
             name=name,
-            icon=icon or "",
-            color=color or "#4CAF50",
+            color=color or DEFAULT_CATEGORY_COLOR,
             is_income=_parse_is_income(is_income),
         )
     except PydanticValidationError as exc:
@@ -45,12 +44,11 @@ def categories_section(request):
 def create_category_ui(
     request,
     name: str = Form(...),
-    icon: str = Form(""),
-    color: str = Form("#4CAF50"),
+    color: str = Form(DEFAULT_CATEGORY_COLOR),
     is_income: str = Form(""),
 ):
     user = get_authenticated_user(request)
-    payload, error = _validate_category_form(name, icon, color, is_income)
+    payload, error = _validate_category_form(name, color, is_income)
     if error:
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
 
@@ -81,13 +79,12 @@ def update_category_ui(
     request,
     category_id: int,
     name: str = Form(...),
-    icon: str = Form(""),
-    color: str = Form("#4CAF50"),
+    color: str = Form(DEFAULT_CATEGORY_COLOR),
     is_income: str = Form(""),
 ):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
-    payload, error = _validate_category_form(name, icon, color, is_income)
+    payload, error = _validate_category_form(name, color, is_income)
     if error:
         return render_section_response(
             request,

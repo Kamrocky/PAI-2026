@@ -1,5 +1,7 @@
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
+from django.utils import timezone
 from pydantic import ValidationError as PydanticValidationError
 from ninja import Form, Router
 
@@ -29,12 +31,26 @@ def _parse_optional_int(value: str) -> int | None:
         return None
 
 
+def _parse_transaction_date(value: str) -> datetime | None:
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if timezone.is_naive(parsed):
+        return timezone.make_aware(parsed, timezone.get_current_timezone())
+    return parsed
+
+
 def _validate_transaction_form(
     account_id: str,
     category_id: str,
     amount: str,
     title: str,
     description: str,
+    date: str,
 ) -> tuple[TransactionIn | None, str | None]:
     parsed_account_id = _parse_optional_int(account_id)
     if parsed_account_id is None:
@@ -45,6 +61,10 @@ def _validate_transaction_form(
     except InvalidOperation:
         return None, "Nieprawidłowa kwota."
 
+    parsed_date = _parse_transaction_date(date)
+    if date.strip() and parsed_date is None:
+        return None, "Nieprawidłowa data transakcji."
+
     try:
         payload = TransactionIn(
             account_id=parsed_account_id,
@@ -52,6 +72,7 @@ def _validate_transaction_form(
             amount=amount_decimal,
             title=title,
             description=description or "",
+            date=parsed_date,
         )
     except PydanticValidationError as exc:
         messages = [err["msg"] for err in exc.errors()]
@@ -80,10 +101,11 @@ def create_transaction_ui(
     amount: str = Form(...),
     title: str = Form(...),
     description: str = Form(""),
+    date: str = Form(""),
 ):
     user = get_authenticated_user(request)
     payload, error = _validate_transaction_form(
-        account_id, category_id, amount, title, description
+        account_id, category_id, amount, title, description, date
     )
     if error:
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
@@ -95,6 +117,7 @@ def create_transaction_ui(
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
     return render_section_response(
         request,
@@ -126,11 +149,12 @@ def update_transaction_ui(
     amount: str = Form(...),
     title: str = Form(...),
     description: str = Form(""),
+    date: str = Form(...),
 ):
     user = get_authenticated_user(request)
     txn = get_user_transaction(user, transaction_id)
     payload, error = _validate_transaction_form(
-        account_id, category_id, amount, title, description
+        account_id, category_id, amount, title, description, date
     )
     if error:
         return render_section_response(
@@ -149,6 +173,7 @@ def update_transaction_ui(
         amount=data["amount"],
         title=data["title"],
         description=data["description"],
+        date=data["date"],
     )
     return render_section_response(
         request,

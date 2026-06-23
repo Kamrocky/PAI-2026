@@ -12,12 +12,22 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input type="text" name="name" placeholder="Nazwa konta" required
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="currency" value="PLN" placeholder="PLN" required
-                   maxlength="3" class="w-full rounded border border-gray-300 p-2 font-mono uppercase focus:border-blue-500 focus:outline-none">
+            <label class="block">
+                <span class="mb-1 block text-xs text-gray-600">Waluta</span>
+                <select name="currency" required
+                        class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
+                    {% for currency_code in allowed_currencies %}
+                    <option value="{{ currency_code }}"
+                            {% if currency_code == "PLN" %}selected{% endif %}>
+                        {{ currency_code }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
             <input type="text" name="balance" value="0.00" placeholder="Saldo początkowe"
                    class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
         </div>
-        <p class="text-xs text-gray-500">Saldo początkowe ustawiasz tylko przy tworzeniu konta. Później zmieniają je transakcje.</p>
+        <p class="text-xs text-gray-500">Saldo początkowe ustawiasz tylko przy tworzeniu konta. Waluty nie można zmienić później.</p>
         <button type="submit"
                 class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
             Dodaj
@@ -34,8 +44,11 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" value="{{ editing_account.name }}" required
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="currency" value="{{ editing_account.currency }}" required
-                   maxlength="3" class="w-full rounded border border-gray-300 p-2 font-mono uppercase focus:border-blue-500 focus:outline-none">
+            <p class="text-xs text-gray-600 self-end">
+                Waluta:
+                <span class="font-mono font-semibold">{{ editing_account.currency }}</span>
+                (niezmienialna)
+            </p>
         </div>
         <p class="text-xs text-gray-600">
             Aktualne saldo:

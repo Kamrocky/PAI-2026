@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from finance.constants import DEFAULT_CATEGORY_COLOR
 from finance.models import Account, Category, Transaction
 
 
@@ -35,7 +36,7 @@ class CategoryModelTest(TestCase):
     def test_create_expense_category(self):
         category = Category.objects.create(user=self.user, name="Jedzenie")
         self.assertFalse(category.is_income)
-        self.assertEqual(category.color, "#4CAF50")
+        self.assertEqual(category.color, DEFAULT_CATEGORY_COLOR)
 
     def test_create_income_category(self):
         category = Category.objects.create(user=self.user, name="Wynagrodzenie", is_income=True)

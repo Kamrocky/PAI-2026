@@ -12,10 +12,15 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" placeholder="Nazwa" required
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="icon" placeholder="Ikona (opcjonalnie)"
-                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="color" value="#4CAF50" placeholder="#RRGGBB" required
-                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
+            <label class="block">
+                <span class="mb-1 block text-xs text-gray-600">Kolor</span>
+                <select name="color" required
+                        class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+                    {% for palette_color in category_color_palette %}
+                    <option value="{{ palette_color }}">{{ palette_color }}</option>
+                    {% endfor %}
+                </select>
+            </label>
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="is_income" value="true" class="rounded">
                 <span>Przychód</span>
@@ -37,10 +42,18 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input type="text" name="name" value="{{ editing_category.name }}" required
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="icon" value="{{ editing_category.icon }}"
-                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
-            <input type="text" name="color" value="{{ editing_category.color }}" required
-                   class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
+            <label class="block">
+                <span class="mb-1 block text-xs text-gray-600">Kolor</span>
+                <select name="color" required
+                        class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+                    {% for palette_color in category_color_palette %}
+                    <option value="{{ palette_color }}"
+                            {% if editing_category.color == palette_color %}selected{% endif %}>
+                        {{ palette_color }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="is_income" value="true"
                        {% if editing_category.is_income %}checked{% endif %}
@@ -77,9 +90,7 @@
             <tbody>
                 {% for cat in categories %}
                 <tr class="border-b">
-                    <td class="p-2">
-                        {% if cat.icon %}{{ cat.icon }} {% endif %}{{ cat.name }}
-                    </td>
+                    <td class="p-2">{{ cat.name }}</td>
                     <td class="p-2">
                         <span class="inline-flex items-center gap-2">
                             <span class="inline-block h-4 w-4 rounded-full border"

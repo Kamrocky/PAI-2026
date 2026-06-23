@@ -36,6 +36,11 @@
                    class="w-full rounded border border-gray-300 p-2 font-mono focus:border-blue-500 focus:outline-none">
             <input type="text" name="description" placeholder="Opis (opcjonalnie)"
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+            <label class="block sm:col-span-2">
+                <span class="mb-1 block text-xs text-gray-600">Data i godzina (opcjonalnie — domyślnie teraz)</span>
+                <input type="datetime-local" name="date"
+                       class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+            </label>
         </div>
         <button type="submit"
                 class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
@@ -85,8 +90,13 @@
                    class="w-full rounded border p-2 font-mono">
             <input type="text" name="description" value="{{ editing_transaction.description }}"
                    class="w-full rounded border p-2">
+            <label class="block sm:col-span-2">
+                <span class="mb-1 block text-xs text-gray-600">Data i godzina</span>
+                <input type="datetime-local" name="date" required
+                       value="{{ editing_transaction.date|date:'Y-m-d' }}T{{ editing_transaction.date|date:'H:i' }}"
+                       class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+            </label>
         </div>
-        <p class="text-xs text-gray-500">Data: {{ editing_transaction.date|date:"Y-m-d H:i" }} (nieedytowalna)</p>
         <div class="flex gap-2">
             <button type="submit"
                     class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">

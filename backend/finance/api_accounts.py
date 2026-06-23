@@ -37,9 +37,8 @@ def get_account(request, account_id: int):
 def update_account(request, account_id: int, payload: AccountIn):
     user = get_authenticated_user(request)
     account = get_user_account(user, account_id)
-    for field, value in payload.model_dump().items():
-        setattr(account, field, value)
-    account.save()
+    account.name = payload.name
+    account.save(update_fields=["name"])
     return account
 
 

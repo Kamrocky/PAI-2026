@@ -1,7 +1,9 @@
+from datetime import datetime
 from decimal import Decimal
 
 from django.db import transaction as db_transaction
 from django.db.models import F
+from django.utils import timezone
 
 from .models import Account, Category, Transaction
 
@@ -27,6 +29,7 @@ def create_transaction(
     amount: Decimal,
     title: str,
     description: str,
+    date: datetime | None = None,
 ) -> Transaction:
     txn = Transaction.objects.create(
         account=account,
@@ -34,6 +37,7 @@ def create_transaction(
         amount=amount,
         title=title,
         description=description,
+        date=date or timezone.now(),
     )
     adjust_account_balance(account.pk, amount)
     return txn
@@ -48,6 +52,7 @@ def update_transaction(
     amount: Decimal,
     title: str,
     description: str,
+    date: datetime | None = None,
 ) -> Transaction:
     old_account_id = txn.account_id
     old_amount = txn.amount
@@ -57,6 +62,8 @@ def update_transaction(
     txn.amount = amount
     txn.title = title
     txn.description = description
+    if date is not None:
+        txn.date = date
     txn.save()
 
     if old_account_id == account.pk:
