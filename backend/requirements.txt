@@ -1,3 +1,4 @@
 django
 django-ninja
 psycopg2-binary
+flake8

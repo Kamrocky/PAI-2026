@@ -1,0 +1,64 @@
+name: Migrations Check
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+  workflow_call:
+
+jobs:
+  migrations-check:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: budget_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Apply migrations
+        working-directory: backend
+        env:
+          DB_NAME: budget_db
+          DB_USER: user
+          DB_PASSWORD: password
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: ci-secret-key
+        run: python manage.py migrate
+
+      - name: Check for missing migrations
+        working-directory: backend
+        env:
+          DB_NAME: budget_db
+          DB_USER: user
+          DB_PASSWORD: password
+          DB_HOST: localhost
+          DB_PORT: 5432
+          SECRET_KEY: ci-secret-key
+        run: python manage.py makemigrations --check

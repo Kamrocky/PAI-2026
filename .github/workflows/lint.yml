@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install flake8
+
+      - name: Run flake8
+        run: flake8 backend --max-line-length=120 --exclude=backend/finance/migrations
