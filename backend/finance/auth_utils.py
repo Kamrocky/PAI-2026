@@ -42,15 +42,13 @@ def render_auth_step(
     email: str | None = None,
     error: str | None = None,
 ) -> HttpResponse:
-    template_map = {
-        "email": "partials/auth_step_email.html",
-        "login": "partials/auth_step_login.html",
-        "register": "partials/auth_step_register.html",
-    }
-    template_name = template_map.get(step, "partials/auth_step_email.html")
     body = render_to_string(
-        template_name,
-        {"error": error, "email": email or ""},
+        "partials/auth_forms.html",
+        {
+            "error": error,
+            "email": email or "",
+            "auth_step": step,
+        },
         request=request,
     )
     return HttpResponse(body)
@@ -68,8 +66,8 @@ def render_auth_success(request, user) -> HttpResponse:
 
 def render_logout_success(request) -> HttpResponse:
     auth_html = render_to_string(
-        "partials/auth_step_email.html",
-        {"error": None, "email": ""},
+        "partials/auth_forms.html",
+        {"error": None, "email": "", "auth_step": "email"},
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=False)
