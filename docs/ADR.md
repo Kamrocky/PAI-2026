@@ -140,3 +140,26 @@ Osobny React i osobne API miałyby sens przy większym produkcie albo gdybyśmy 
 
 **Konsekwencje:**  
 Aplikacja będzie mniej elastyczna, jeśli w przyszłości chcielibyśmy niezależnie skalować frontend i backend. Frontend jest też bardziej zależny od Django. Na potrzeby projektu ważniejsza jest jednak prostota i spójność.
+
+---
+
+## 7. Django Session do uwierzytelniania
+
+**Decyzja:**  
+Do uwierzytelniania użytkowników używamy wbudowanego mechanizmu sesji Django, a nie tokenów JWT.
+
+**Kontekst:**  
+Aplikacja wymaga logowania: użytkownik musi mieć dostęp tylko do swoich kont, kategorii i transakcji. Potrzebujemy prostego i bezpiecznego sposobu na identyfikację zalogowanego użytkownika przy każdym żądaniu.
+
+**Rozważane alternatywy:**
+- JWT (np. przez djangorestframework-simplejwt)
+- Token-based auth z Django REST Framework
+- OAuth2 / logowanie przez zewnętrznego dostawcę
+
+**Dlaczego Django Session:**  
+Django Session jest wbudowane w framework i nie wymaga żadnych dodatkowych bibliotek. Sesja jest przechowywana po stronie serwera, a przeglądarka dostaje tylko cookie z identyfikatorem sesji. Dobrze współpracuje z HTMX i szablonami Django, bo każde żądanie HTMX automatycznie wysyła cookie sesji. Nie musimy też samodzielnie obsługiwać odświeżania tokenów ani przechowywania JWT po stronie klienta.
+
+JWT sprawdziłoby się lepiej przy osobnym frontendzie SPA albo przy API konsumowanym przez aplikacje mobilne. W naszym monolicie Django z HTMX byłoby to zbędna komplikacja.
+
+**Konsekwencje:**  
+Sesje są przechowywane w bazie danych, co oznacza dodatkowe zapytania przy każdym żądaniu. Rozwiązanie jest też mniej przenośne — gdybyśmy w przyszłości chcieli udostępnić API dla zewnętrznych klientów, musielibyśmy dodać osobny mechanizm uwierzytelniania. Na potrzeby obecnej aplikacji webowej sesje są wystarczające i bezpieczne.

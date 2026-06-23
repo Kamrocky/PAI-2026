@@ -5,11 +5,12 @@ from pydantic import ConfigDict, field_validator
 
 from ninja import Schema
 
+from .constants import ALLOWED_CURRENCIES, CATEGORY_COLOR_PALETTE, DEFAULT_CATEGORY_COLOR
+
 
 class CategoryIn(Schema):
     name: str
-    icon: str = ""
-    color: str = "#4CAF50"
+    color: str = DEFAULT_CATEGORY_COLOR
     is_income: bool = False
 
     @field_validator("name")
@@ -22,16 +23,15 @@ class CategoryIn(Schema):
 
     @field_validator("color")
     @classmethod
-    def color_format(cls, value: str) -> str:
+    def color_in_palette(cls, value: str) -> str:
         value = value.strip()
-        if not value.startswith("#") or len(value) != 7:
-            raise ValueError("Kolor musi być w formacie #RRGGBB.")
+        if value not in CATEGORY_COLOR_PALETTE:
+            raise ValueError("Kolor musi być wybrany z predefiniowanej palety.")
         return value
 
 
 class CategoryUpdate(Schema):
     name: str | None = None
-    icon: str | None = None
     color: str | None = None
     is_income: bool | None = None
 
@@ -47,12 +47,12 @@ class CategoryUpdate(Schema):
 
     @field_validator("color")
     @classmethod
-    def color_format(cls, value: str | None) -> str | None:
+    def color_in_palette(cls, value: str | None) -> str | None:
         if value is None:
             return value
         value = value.strip()
-        if not value.startswith("#") or len(value) != 7:
-            raise ValueError("Kolor musi być w formacie #RRGGBB.")
+        if value not in CATEGORY_COLOR_PALETTE:
+            raise ValueError("Kolor musi być wybrany z predefiniowanej palety.")
         return value
 
 
@@ -61,7 +61,6 @@ class CategoryOut(Schema):
 
     id: int
     name: str
-    icon: str
     color: str
     is_income: bool
 
@@ -81,17 +80,16 @@ class AccountIn(Schema):
 
     @field_validator("currency")
     @classmethod
-    def currency_format(cls, value: str) -> str:
+    def currency_allowed(cls, value: str) -> str:
         value = value.strip().upper()
-        if len(value) != 3 or not value.isalpha():
-            raise ValueError("Waluta musi być trzyliterowym kodem ISO, np. PLN.")
+        if value not in ALLOWED_CURRENCIES:
+            raise ValueError("Waluta musi być wybrana z predefiniowanej listy.")
         return value
 
 
 class AccountUpdate(Schema):
     name: str | None = None
     balance: Decimal | None = None
-    currency: str | None = None
 
     @field_validator("name")
     @classmethod
@@ -101,16 +99,6 @@ class AccountUpdate(Schema):
         value = value.strip()
         if not value:
             raise ValueError("Nazwa konta nie może być pusta.")
-        return value
-
-    @field_validator("currency")
-    @classmethod
-    def currency_format(cls, value: str | None) -> str | None:
-        if value is None:
-            return value
-        value = value.strip().upper()
-        if len(value) != 3 or not value.isalpha():
-            raise ValueError("Waluta musi być trzyliterowym kodem ISO, np. PLN.")
         return value
 
 
@@ -129,6 +117,7 @@ class TransactionIn(Schema):
     amount: Decimal
     title: str
     description: str = ""
+    date: datetime | None = None
 
     @field_validator("title")
     @classmethod
@@ -145,6 +134,7 @@ class TransactionUpdate(Schema):
     amount: Decimal | None = None
     title: str | None = None
     description: str | None = None
+    date: datetime | None = None
 
     @field_validator("title")
     @classmethod

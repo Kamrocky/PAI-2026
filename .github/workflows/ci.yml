@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  migrations-check:
+    uses: ./.github/workflows/migrations-check.yml
+
+  django-test:
+    uses: ./.github/workflows/django-test.yml
