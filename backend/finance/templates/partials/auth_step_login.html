@@ -1,0 +1,29 @@
+<div class="text-center">
+    {% if error %}
+    <div class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <h2 class="text-2xl font-bold mb-2">Witaj ponownie</h2>
+    <p class="mb-4 text-sm text-gray-600">{{ email }}</p>
+    <form hx-post="/api/auth/login"
+          hx-target="#main-content"
+          hx-swap="innerHTML"
+          class="space-y-4 max-w-xs mx-auto">
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ email }}">
+        <input type="password" name="password" placeholder="Hasło" autocomplete="current-password"
+               class="w-full border p-2 rounded" required>
+        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700">
+            Zaloguj się
+        </button>
+    </form>
+    <button type="button"
+            hx-get="/api/auth"
+            hx-target="#main-content"
+            hx-swap="innerHTML"
+            class="mt-4 text-sm text-blue-600 hover:underline">
+        Użyj innego adresu e-mail
+    </button>
+</div>

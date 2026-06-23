@@ -7,6 +7,17 @@ from ninja.errors import HttpError
 from .ui_utils import get_ui_context
 
 
+def get_display_name(user) -> str:
+    first_name = (getattr(user, "first_name", "") or "").strip()
+    if first_name:
+        return first_name
+
+    email = (getattr(user, "email", "") or getattr(user, "username", "") or "").strip()
+    if "@" in email:
+        return email.split("@", 1)[0]
+    return email or "Użytkowniku"
+
+
 def get_dashboard_context(user):
     return get_ui_context(user)
 
@@ -21,9 +32,25 @@ def render_user_info(request, *, logged_in: bool) -> str:
 
 
 def render_auth_page(request, error: str | None = None) -> HttpResponse:
+    return render_auth_step(request, step="email", error=error)
+
+
+def render_auth_step(
+    request,
+    *,
+    step: str,
+    email: str | None = None,
+    error: str | None = None,
+) -> HttpResponse:
+    template_map = {
+        "email": "partials/auth_step_email.html",
+        "login": "partials/auth_step_login.html",
+        "register": "partials/auth_step_register.html",
+    }
+    template_name = template_map.get(step, "partials/auth_step_email.html")
     body = render_to_string(
-        "partials/auth_forms.html",
-        {"error": error},
+        template_name,
+        {"error": error, "email": email or ""},
         request=request,
     )
     return HttpResponse(body)
@@ -41,8 +68,8 @@ def render_auth_success(request, user) -> HttpResponse:
 
 def render_logout_success(request) -> HttpResponse:
     auth_html = render_to_string(
-        "partials/auth_forms.html",
-        {"error": None},
+        "partials/auth_step_email.html",
+        {"error": None, "email": ""},
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=False)

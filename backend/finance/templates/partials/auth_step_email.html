@@ -1,0 +1,21 @@
+<div class="text-center">
+    {% if error %}
+    <div class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <h2 class="text-2xl font-bold mb-4">Zaloguj się lub załóż konto</h2>
+    <form hx-post="/api/auth/check-email"
+          hx-target="#main-content"
+          hx-swap="innerHTML"
+          class="space-y-4 max-w-xs mx-auto">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Adres e-mail" autocomplete="email"
+               value="{{ email }}"
+               class="w-full border p-2 rounded" required>
+        <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700">
+            Dalej
+        </button>
+    </form>
+</div>
