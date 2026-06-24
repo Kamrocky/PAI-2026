@@ -20,6 +20,7 @@
     {% endif %}
 
     <form
+      data-transaction-form
       {% if editing_transaction %}
         hx-post="/api/ui/home/transactions/{{ editing_transaction.id }}/edit"
       {% else %}
@@ -49,25 +50,28 @@
         <input
           type="text"
           name="amount"
+          data-txn-amount
           value="{% if editing_transaction %}{{ editing_transaction.amount }}{% endif %}"
           required
           inputmode="decimal"
           placeholder="-50.00"
           class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 font-mono text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
         />
-        <span class="mt-1 block text-xs text-zinc-500">Ujemna = wydatek, dodatnia = przychód.</span>
+        <span class="mt-1 block text-xs text-zinc-500">Ujemna = wydatek, dodatnia = wpływ.</span>
       </label>
 
       <label class="block">
         <span class="mb-1 block text-xs font-medium text-zinc-300">Kategoria</span>
         <select
           name="category_id"
+          data-txn-category
           class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
         >
           <option value="">Brak kategorii</option>
           {% for cat in categories %}
             <option
               value="{{ cat.id }}"
+              data-is-income="{{ cat.is_income|yesno:'true,false' }}"
               {% if editing_transaction and editing_transaction.category_id == cat.id %}selected{% endif %}
             >
               {{ cat.name }}
@@ -123,7 +127,7 @@
       <div class="mt-6 border-t border-white/10 pt-4">
         <button
           type="button"
-          hx-get="/api/ui/home/transactions/{{ editing_transaction.id }}/delete-confirm"
+          hx-get="/api/ui/home/transactions/{{ editing_transaction.id }}/delete-confirm?back=edit"
           hx-target="#home-modal"
           hx-swap="innerHTML"
           class="text-sm text-rose-300 hover:text-rose-200 hover:underline"
@@ -134,3 +138,46 @@
     {% endif %}
   </div>
 </div>
+
+<script>
+  (function () {
+    const form = document.querySelector("[data-transaction-form]");
+    if (!form) return;
+
+    const amountInput = form.querySelector("[data-txn-amount]");
+    const categorySelect = form.querySelector("[data-txn-category]");
+    if (!amountInput || !categorySelect) return;
+
+    function syncCategories() {
+      const raw = amountInput.value.trim().replace(",", ".");
+      const amount = Number.parseFloat(raw);
+      let incomeFilter = null;
+
+      if (raw !== "" && !Number.isNaN(amount)) {
+        if (amount < 0) {
+          incomeFilter = false;
+        } else if (amount > 0) {
+          incomeFilter = true;
+        }
+      }
+
+      let selectedHidden = false;
+      categorySelect.querySelectorAll("option[data-is-income]").forEach((option) => {
+        const isIncome = option.dataset.isIncome === "true";
+        const visible = incomeFilter === null || isIncome === incomeFilter;
+        option.hidden = !visible;
+        option.disabled = !visible;
+        if (option.selected && !visible) {
+          selectedHidden = true;
+        }
+      });
+
+      if (selectedHidden) {
+        categorySelect.value = "";
+      }
+    }
+
+    amountInput.addEventListener("input", syncCategories);
+    syncCategories();
+  })();
+</script>

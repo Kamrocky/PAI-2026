@@ -117,11 +117,28 @@ class HomeTransactionsUiTest(TestCase):
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Transakcje", content)
+        self.assertIn("Ostatnie transakcje", content)
         self.assertIn("Zakupy", content)
         self.assertNotIn("Obce", content)
         self.assertIn("#4DB6A0", content)
         self.assertIn('aria-label="Dodaj transakcję"', content)
+        self.assertIn("Nowa transakcja", content)
+
+    def test_collapsed_list_shows_pokaz_wiecej_at_bottom(self):
+        for index in range(7):
+            Transaction.objects.create(
+                account=self.account,
+                amount=Decimal(f"-{index + 1}.00"),
+                title=f"Tx {index}",
+                date=timezone.now() - timedelta(minutes=index),
+            )
+
+        response = self.client.get("/")
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Pokaż więcej", content)
+        self.assertNotIn("Zwiń", content)
 
     def test_expand_transactions_shows_pagination_controls(self):
         for index in range(12):
@@ -136,7 +153,8 @@ class HomeTransactionsUiTest(TestCase):
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Zwiń", content)
+        self.assertIn("Wszystkie transakcje", content)
+        self.assertNotIn("Zwiń", content)
         self.assertIn('aria-label="Paginacja transakcji"', content)
 
     def test_transaction_detail_modal_and_edit_updates_balance(self):
@@ -229,6 +247,50 @@ class HomeTransactionsUiTest(TestCase):
         self.assertFalse(Transaction.objects.filter(pk=txn.pk).exists())
         self.account.refresh_from_db()
         self.assertEqual(self.account.balance, Decimal("1000.00"))
+
+    def test_delete_confirm_from_list_cancel_closes_modal(self):
+        txn = create_transaction(
+            account=self.account,
+            category=None,
+            amount=Decimal("-10.00"),
+            title="Do usunięcia",
+            description="",
+        )
+
+        confirm = self.client.get(f"/api/ui/home/transactions/{txn.pk}/delete-confirm")
+        content = confirm.content.decode()
+
+        self.assertEqual(confirm.status_code, 200)
+        self.assertIn("/api/ui/home/modal/close", content)
+        self.assertNotIn("?back=edit", content)
+
+    def test_delete_confirm_from_edit_cancel_returns_to_edit(self):
+        txn = create_transaction(
+            account=self.account,
+            category=None,
+            amount=Decimal("-10.00"),
+            title="Edycja",
+            description="",
+        )
+
+        confirm = self.client.get(
+            f"/api/ui/home/transactions/{txn.pk}/delete-confirm?back=edit"
+        )
+        content = confirm.content.decode()
+
+        self.assertEqual(confirm.status_code, 200)
+        self.assertIn(f"/api/ui/home/transactions/{txn.pk}/edit", content)
+
+    def test_transaction_form_modal_filters_categories_by_amount(self):
+        Category.objects.create(user=self.user, name="Wydatek", is_income=False)
+        Category.objects.create(user=self.user, name="Wpływ", is_income=True)
+
+        response = self.client.get("/api/ui/home/transactions/create")
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("data-is-income", content)
+        self.assertIn("syncCategories", content)
 
     def test_cannot_view_transaction_from_other_account(self):
         other = Account.objects.create(user=self.user, name="Inne", balance=Decimal("0.00"))

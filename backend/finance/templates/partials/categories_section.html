@@ -23,7 +23,7 @@
             </label>
             <label class="flex items-center gap-2">
                 <input type="checkbox" name="is_income" value="true" class="rounded">
-                <span>Przychód</span>
+                <span>Wpływ</span>
             </label>
         </div>
         <button type="submit"
@@ -58,7 +58,7 @@
                 <input type="checkbox" name="is_income" value="true"
                        {% if editing_category.is_income %}checked{% endif %}
                        class="rounded">
-                <span>Przychód</span>
+                <span>Wpływ</span>
             </label>
         </div>
         <div class="flex gap-2">
@@ -100,7 +100,7 @@
                     </td>
                     <td class="p-2">
                         {% if cat.is_income %}
-                            <span class="text-green-600">Przychód</span>
+                            <span class="text-green-600">Wpływ</span>
                         {% else %}
                             <span class="text-gray-600">Wydatek</span>
                         {% endif %}

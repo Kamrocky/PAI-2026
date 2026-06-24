@@ -317,14 +317,24 @@ def get_month_over_month_comparison(account: Account) -> MonthComparison:
     )
 
 
-def _format_change_label(change_pct: Decimal | None, *, noun: str) -> str:
+def _format_expense_change_label(change_pct: Decimal | None) -> str:
     if change_pct is None:
-        return f"Brak {noun} w poprzednim miesiącu do porównania."
+        return "Brak wydatków w poprzednim miesiącu do porównania."
     if change_pct > 0:
-        return f"+{change_pct}% {noun} względem poprzedniego miesiąca."
+        return f"+{change_pct}% wydatków względem poprzedniego miesiąca."
     if change_pct < 0:
-        return f"{change_pct}% {noun} względem poprzedniego miesiąca."
-    return f"Bez zmian {noun} względem poprzedniego miesiąca."
+        return f"{change_pct}% wydatków względem poprzedniego miesiąca."
+    return "Twoje wydatki są takie same jak w poprzednim miesiącu."
+
+
+def _format_income_change_label(change_pct: Decimal | None) -> str:
+    if change_pct is None:
+        return "Brak wpływów w poprzednim miesiącu do porównania."
+    if change_pct > 0:
+        return f"+{change_pct}% wpływów względem poprzedniego miesiąca."
+    if change_pct < 0:
+        return f"{change_pct}% wpływów względem poprzedniego miesiąca."
+    return "Twoje wpływy są takie same jak w poprzednim miesiącu."
 
 
 def get_comparison_labels(comparison: MonthComparison) -> dict[str, str]:
@@ -333,14 +343,8 @@ def get_comparison_labels(comparison: MonthComparison) -> dict[str, str]:
         return {"income_label": message, "expense_label": message}
 
     return {
-        "income_label": _format_change_label(
-            comparison.income_change_pct,
-            noun="przychodów",
-        ),
-        "expense_label": _format_change_label(
-            comparison.expense_change_pct,
-            noun="wydatków",
-        ),
+        "income_label": _format_income_change_label(comparison.income_change_pct),
+        "expense_label": _format_expense_change_label(comparison.expense_change_pct),
     }
 
 

@@ -30,9 +30,15 @@
       </form>
       <button
         type="button"
-        hx-get="/api/ui/home/transactions/{{ transaction.id }}/edit"
-        hx-target="#home-modal"
-        hx-swap="innerHTML"
+        {% if delete_cancel_returns_to_edit %}
+          hx-get="/api/ui/home/transactions/{{ transaction.id }}/edit"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+        {% else %}
+          hx-get="/api/ui/home/modal/close"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+        {% endif %}
         class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 hover:bg-white/10"
       >
         Anuluj

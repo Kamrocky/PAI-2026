@@ -1,47 +1,21 @@
 <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h2 class="text-sm font-medium uppercase tracking-wide text-zinc-400">Transakcje</h2>
-    <div class="flex flex-wrap items-center gap-2">
-      {% if active_account %}
-        <button
-          type="button"
-          hx-get="/api/ui/home/transactions/create"
-          hx-target="#home-modal"
-          hx-swap="innerHTML"
-          class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg leading-none text-zinc-300 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-200"
-          aria-label="Dodaj transakcję"
-        >
-          +
-        </button>
-      {% endif %}
-      {% if transactions_page %}
-        {% if transactions_expanded %}
-          <form
-            hx-post="/api/ui/home/transactions/collapse"
-            hx-target="#home-transactions"
-            hx-swap="outerHTML"
-            class="inline"
-          >
-            {% csrf_token %}
-            <button type="submit" class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
-              Zwiń
-            </button>
-          </form>
-        {% elif transactions_page.has_more %}
-          <form
-            hx-post="/api/ui/home/transactions/expand"
-            hx-target="#home-transactions"
-            hx-swap="outerHTML"
-            class="inline"
-          >
-            {% csrf_token %}
-            <button type="submit" class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
-              Pokaż wszystkie
-            </button>
-          </form>
-        {% endif %}
-      {% endif %}
-    </div>
+    <h2 class="text-sm font-medium uppercase tracking-wide text-zinc-400">
+      {% if transactions_expanded %}Wszystkie transakcje{% else %}Ostatnie transakcje{% endif %}
+    </h2>
+    {% if active_account %}
+      <button
+        type="button"
+        hx-get="/api/ui/home/transactions/create"
+        hx-target="#home-modal"
+        hx-swap="innerHTML"
+        class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-zinc-300 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-200"
+        aria-label="Dodaj transakcję"
+      >
+        <span class="text-base leading-none">+</span>
+        <span>Nowa transakcja</span>
+      </button>
+    {% endif %}
   </div>
 
   {% if transactions_page and transactions_page.transactions %}
@@ -87,9 +61,35 @@
               <path d="m2.695 14.762-1.262 3.154a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
             </svg>
           </button>
+          <button
+            type="button"
+            hx-get="/api/ui/home/transactions/{{ txn.id }}/delete-confirm"
+            hx-target="#home-modal"
+            hx-swap="innerHTML"
+            class="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
+            aria-label="Usuń transakcję {{ txn.title }}"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 9.24A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-9.24.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.495.098l.347 9a.75.75 0 0 0 1.498.075l-.347-9Zm4.34.025a.75.75 0 0 0-1.498-.073l-.347 9a.75.75 0 0 0 1.495.1l.35-9.127ZM10 8.75a.75.75 0 0 1 .75.75v6.5a.75.75 0 0 1-1.5 0v-6.5A.75.75 0 0 1 10 8.75Z" clip-rule="evenodd" />
+            </svg>
+          </button>
         </li>
       {% endfor %}
     </ul>
+
+    {% if not transactions_expanded and transactions_page.has_more %}
+      <form
+        hx-post="/api/ui/home/transactions/expand"
+        hx-target="#home-transactions"
+        hx-swap="outerHTML"
+        class="mt-4 text-center"
+      >
+        {% csrf_token %}
+        <button type="submit" class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
+          Pokaż więcej
+        </button>
+      </form>
+    {% endif %}
 
     {% if transactions_expanded and transactions_page.num_pages > 1 %}
       {% include "partials/home/transactions_pagination.html" %}

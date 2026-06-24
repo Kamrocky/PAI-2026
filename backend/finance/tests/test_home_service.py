@@ -112,6 +112,53 @@ class HomeServiceTest(TestCase):
         self.assertEqual(comparison.expense_change_pct, Decimal("-50.0"))
         self.assertIn("wydatków", labels["expense_label"])
 
+    def test_month_comparison_unchanged_shows_same_message(self):
+        now = timezone.now()
+        current_start = now.replace(day=1, hour=12, minute=0, second=0, microsecond=0)
+        if current_start.month == 1:
+            previous = current_start.replace(year=current_start.year - 1, month=12, day=15)
+        else:
+            previous = current_start.replace(month=current_start.month - 1, day=15)
+
+        Transaction.objects.create(
+            account=self.account,
+            amount=Decimal("-100.00"),
+            title="Poprzedni miesiąc",
+            date=previous,
+        )
+        Transaction.objects.create(
+            account=self.account,
+            amount=Decimal("-100.00"),
+            title="Bieżący miesiąc",
+            date=current_start,
+        )
+        Transaction.objects.create(
+            account=self.account,
+            amount=Decimal("200.00"),
+            title="Wpływ poprzedni",
+            date=previous,
+        )
+        Transaction.objects.create(
+            account=self.account,
+            amount=Decimal("200.00"),
+            title="Wpływ bieżący",
+            date=current_start,
+        )
+
+        comparison = get_month_over_month_comparison(self.account)
+        labels = get_comparison_labels(comparison)
+
+        self.assertEqual(comparison.expense_change_pct, Decimal("0.0"))
+        self.assertEqual(comparison.income_change_pct, Decimal("0.0"))
+        self.assertEqual(
+            labels["expense_label"],
+            "Twoje wydatki są takie same jak w poprzednim miesiącu.",
+        )
+        self.assertEqual(
+            labels["income_label"],
+            "Twoje wpływy są takie same jak w poprzednim miesiącu.",
+        )
+
     def test_resolve_active_account_uses_session(self):
         other = Account.objects.create(user=self.user, name="Oszczędności")
         request = self._request()

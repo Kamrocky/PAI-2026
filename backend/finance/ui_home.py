@@ -297,16 +297,6 @@ def expand_transactions(request):
     return HttpResponse(render_home_transactions(request, user))
 
 
-@router.post("/transactions/collapse")
-def collapse_transactions(request):
-    user = get_authenticated_user(request)
-    account = _get_active_account_or_404(request, user)
-    if isinstance(account, HttpResponse):
-        return account
-    set_transactions_expanded(request, False)
-    return HttpResponse(render_home_transactions(request, user))
-
-
 @router.get("/transactions/{transaction_id}")
 def transaction_detail(request, transaction_id: int):
     user = get_authenticated_user(request)
@@ -346,7 +336,7 @@ def edit_transaction_modal(request, transaction_id: int):
 
 
 @router.get("/transactions/{transaction_id}/delete-confirm")
-def delete_transaction_confirm_modal(request, transaction_id: int):
+def delete_transaction_confirm_modal(request, transaction_id: int, back: str = ""):
     user = get_authenticated_user(request)
     account = resolve_active_account(request, user)
     txn = get_user_transaction(user, transaction_id)
@@ -357,7 +347,10 @@ def delete_transaction_confirm_modal(request, transaction_id: int):
             request,
             user,
             "partials/home/transaction_delete_confirm_modal.html",
-            extra_context={"transaction": txn},
+            extra_context={
+                "transaction": txn,
+                "delete_cancel_returns_to_edit": back == "edit",
+            },
         )
     )
 
