@@ -1,0 +1,92 @@
+<section id="profile-section">
+  {% include "partials/inline_alerts.html" %}
+
+  <div class="mx-auto max-w-lg space-y-6">
+
+    <!-- Imię -->
+    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Imię</h3>
+      <form hx-post="/api/ui/profile/name" hx-target="#profile-section" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="space-y-3">
+          <input
+            type="text"
+            name="first_name"
+            value="{{ user.first_name }}"
+            placeholder="Twoje imię"
+            required
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+          >
+            Zapisz imię
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- E-mail -->
+    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Adres e-mail</h3>
+      <form hx-post="/api/ui/profile/email" hx-target="#profile-section" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="space-y-3">
+          <input
+            type="email"
+            name="email"
+            value="{{ user.email }}"
+            placeholder="adres@email.com"
+            required
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+          >
+            Zapisz e-mail
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Hasło -->
+    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Zmiana hasła</h3>
+      <form hx-post="/api/ui/profile/password" hx-target="#profile-section" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="space-y-3">
+          <input
+            type="password"
+            name="current_password"
+            placeholder="Aktualne hasło"
+            required
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+          />
+          <input
+            type="password"
+            name="new_password"
+            placeholder="Nowe hasło (min. 8 znaków)"
+            required
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+          />
+          <input
+            type="password"
+            name="confirm_password"
+            placeholder="Powtórz nowe hasło"
+            required
+            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+          >
+            Zmień hasło
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
