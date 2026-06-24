@@ -41,7 +41,7 @@ class UIViewSmokeTest(TestCase):
         content = response.content.decode()
         self.assertEqual(response.status_code, 200)
         self.assertIn("Kategorie", content)
-        self.assertIn("Widok w budowie", content)
+        self.assertIn('hx-get="/api/ui/categories"', content)
         self.assertNotIn("Zarządzanie", content)
 
     def test_authenticated_stats_renders_placeholder(self):

@@ -18,12 +18,13 @@ from django.contrib import admin
 from django.urls import path
 
 from finance.api import api
-from finance.views import categories, home, stats
+from finance.views import categories, home, profile, stats
 
 urlpatterns = [
     path("", home, name="home"),
     path("categories/", categories, name="categories"),
     path("stats/", stats, name="stats"),
+    path("profile/", profile, name="profile"),
     path("admin/", admin.site.urls),
     path("api/", api.urls),
 ]

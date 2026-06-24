@@ -1,4 +1,4 @@
-<span class="hidden sm:inline">Witaj, {{ display_name }}</span>
+{% include "partials/nav_greeting.html" %}
 <form
   hx-post="/api/auth/logout"
   hx-target="#page-content"

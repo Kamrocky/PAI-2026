@@ -7,6 +7,15 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     {% block head %}{% endblock %}
+    <style>
+      @keyframes alertFadeOut {
+        0%, 60% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      .alert-auto-dismiss {
+        animation: alertFadeOut 2s ease-in-out forwards;
+      }
+    </style>
   </head>
   <body class="min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100 antialiased {% block body_class %}{% endblock %}">
     {% include "partials/coinzen_auth_background.html" %}
