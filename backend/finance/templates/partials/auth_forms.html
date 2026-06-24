@@ -1,11 +1,19 @@
-<div class="auth-flow mx-auto max-w-md">
-    {% include "partials/ui_alerts.html" %}
+{% include "partials/coinzen_auth_background.html" %}
 
-    {% if auth_step == "login" %}
-        {% include "partials/auth_step_login.html" %}
-    {% elif auth_step == "register" %}
-        {% include "partials/auth_step_register.html" %}
-    {% else %}
-        {% include "partials/auth_step_email.html" %}
-    {% endif %}
+<div class="auth-page relative z-10 left-1/2 -my-8 flex h-[calc(100vh-4.5rem)] w-screen max-w-none -translate-x-1/2 justify-center overflow-hidden px-4">
+    <div class="mx-auto w-full max-w-sm pt-8">
+        <div class="rounded-2xl border border-white/10 bg-zinc-900/70 p-6 shadow-lg shadow-black/20 backdrop-blur-sm">
+            <div class="auth-flow">
+                {% include "partials/ui_alerts.html" %}
+
+                {% if auth_step == "login" %}
+                    {% include "partials/auth_step_login.html" %}
+                {% elif auth_step == "register" %}
+                    {% include "partials/auth_step_register.html" %}
+                {% else %}
+                    {% include "partials/auth_step_email.html" %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>

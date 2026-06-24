@@ -65,7 +65,12 @@ def render_auth_success(request, user) -> HttpResponse:
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=True)
-    return HttpResponse(f"{user_info_html}{dashboard_html}")
+    content_html = (
+        '<div class="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm">'
+        f"{dashboard_html}"
+        "</div>"
+    )
+    return HttpResponse(f"{user_info_html}{content_html}")
 
 
 def render_logout_success(request) -> HttpResponse:
