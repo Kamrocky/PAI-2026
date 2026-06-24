@@ -87,12 +87,12 @@
       </label>
 
       <label class="block">
-        <span class="mb-1 block text-xs font-medium text-zinc-300">Data i godzina</span>
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Data</span>
         <input
-          type="datetime-local"
+          type="date"
           name="date"
           {% if editing_transaction %}required{% endif %}
-          value="{% if editing_transaction %}{{ editing_transaction.date|date:'Y-m-d' }}T{{ editing_transaction.date|date:'H:i' }}{% endif %}"
+          value="{% if editing_transaction %}{{ editing_transaction.date|date:'Y-m-d' }}{% endif %}"
           class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
         />
         {% if not editing_transaction %}

@@ -37,8 +37,8 @@
             <input type="text" name="description" placeholder="Opis (opcjonalnie)"
                    class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             <label class="block sm:col-span-2">
-                <span class="mb-1 block text-xs text-gray-600">Data i godzina (opcjonalnie — domyślnie teraz)</span>
-                <input type="datetime-local" name="date"
+                <span class="mb-1 block text-xs text-gray-600">Data (opcjonalnie — domyślnie dziś)</span>
+                <input type="date" name="date"
                        class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             </label>
         </div>
@@ -91,9 +91,9 @@
             <input type="text" name="description" value="{{ editing_transaction.description }}"
                    class="w-full rounded border p-2">
             <label class="block sm:col-span-2">
-                <span class="mb-1 block text-xs text-gray-600">Data i godzina</span>
-                <input type="datetime-local" name="date" required
-                       value="{{ editing_transaction.date|date:'Y-m-d' }}T{{ editing_transaction.date|date:'H:i' }}"
+                <span class="mb-1 block text-xs text-gray-600">Data</span>
+                <input type="date" name="date" required
+                       value="{{ editing_transaction.date|date:'Y-m-d' }}"
                        class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
             </label>
         </div>
@@ -128,7 +128,7 @@
             <tbody>
                 {% for t in transactions %}
                 <tr class="border-b">
-                    <td class="p-2 whitespace-nowrap text-gray-600">{{ t.date|date:"Y-m-d H:i" }}</td>
+                    <td class="p-2 whitespace-nowrap text-gray-600">{{ t.date|date:"Y-m-d" }}</td>
                     <td class="p-2">{{ t.title }}</td>
                     <td class="p-2 text-gray-600">{{ t.account.name }}</td>
                     <td class="p-2 text-gray-600">

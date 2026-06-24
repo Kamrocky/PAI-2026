@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 
 from django.utils import timezone
@@ -19,10 +19,24 @@ def parse_optional_int(value: str) -> int | None:
         return None
 
 
+def _aware_local_midnight(parsed_date: date) -> datetime:
+    local_midnight = datetime.combine(parsed_date, time.min)
+    return timezone.make_aware(local_midnight, timezone.get_current_timezone())
+
+
 def parse_transaction_date(value: str) -> datetime | None:
     value = (value or "").strip()
     if not value:
         return None
+
+    try:
+        parsed_date = date.fromisoformat(value)
+    except ValueError:
+        parsed_date = None
+
+    if parsed_date is not None:
+        return _aware_local_midnight(parsed_date)
+
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError:

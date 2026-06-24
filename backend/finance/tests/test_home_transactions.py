@@ -170,7 +170,7 @@ class HomeTransactionsUiTest(TestCase):
                 "amount": "-30.00",
                 "title": "Kino poprawione",
                 "description": "",
-                "date": txn.date.strftime("%Y-%m-%dT%H:%M"),
+                "date": txn.date.strftime("%Y-%m-%d"),
             },
         )
         content = response.content.decode()
