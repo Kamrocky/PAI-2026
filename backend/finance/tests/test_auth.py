@@ -157,22 +157,6 @@ class AuthAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Podaj adres e-mail", response.content.decode())
 
-    def test_protected_ping_unauthenticated(self):
-        response = self.client.get("/api/auth/protected-ping")
-        self.assertEqual(response.status_code, 401)
-
-    def test_protected_ping_authenticated(self):
-        User.objects.create_user(
-            username="jan@example.com",
-            email="jan@example.com",
-            password=self.password,
-            first_name="Jan",
-        )
-        self.client.login(username="jan@example.com", password=self.password)
-        response = self.client.get("/api/auth/protected-ping")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("witaj, Jan", response.content.decode())
-
 
 class AuthServiceTest(TestCase):
     def setUp(self):

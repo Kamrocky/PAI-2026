@@ -1,5 +1,4 @@
 from django.contrib.auth import login, logout
-from django.http import HttpResponse
 from ninja import Form, Router
 
 from .auth_service import (
@@ -9,13 +8,7 @@ from .auth_service import (
     register_user_by_email,
     user_exists_by_email,
 )
-from .auth_utils import (
-    get_display_name,
-    render_auth_step,
-    render_auth_success,
-    render_logout_success,
-    require_authenticated_user,
-)
+from .auth_utils import render_auth_step, render_auth_success, render_logout_success
 
 router = Router(tags=["auth"])
 
@@ -74,20 +67,3 @@ def logout_user(request):
     if request.user.is_authenticated:
         logout(request)
     return render_logout_success(request)
-
-
-@router.get("/me")
-def check_me(request):
-    if request.user.is_authenticated:
-        return HttpResponse(
-            f'<span class="text-white/90">Zalogowany jako: {get_display_name(request.user)}</span>',
-        )
-    return HttpResponse('<span class="text-white/80">Niezalogowany</span>')
-
-
-@router.get("/protected-ping")
-def protected_ping(request):
-    user = require_authenticated_user(request)
-    if isinstance(user, HttpResponse):
-        return user
-    return HttpResponse(f"OK — witaj, {get_display_name(user)}")

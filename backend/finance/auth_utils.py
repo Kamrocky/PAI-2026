@@ -32,10 +32,6 @@ def render_user_info(request, *, logged_in: bool) -> str:
     )
 
 
-def render_auth_page(request, error: str | None = None) -> HttpResponse:
-    return render_auth_step(request, step="email", error=error)
-
-
 def render_auth_step(
     request,
     *,
