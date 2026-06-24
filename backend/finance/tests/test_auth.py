@@ -82,7 +82,8 @@ class AuthAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         self.assertIn('id="home-content"', content)
-        self.assertIn("Witaj, Jan", content)
+        self.assertIn('href="/profile/"', content)
+        self.assertIn("Jan", content)
 
     def test_login_wrong_password(self):
         User.objects.create_user(

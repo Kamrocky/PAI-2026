@@ -1,0 +1,33 @@
+<div id="categories-content">
+  <div class="mb-6 flex items-center justify-between gap-4">
+    <h2 class="text-xl font-semibold text-zinc-100">Kategorie</h2>
+    <button
+      hx-get="/api/ui/categories/create"
+      hx-target="#home-modal"
+      hx-swap="innerHTML"
+      class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-emerald-400"
+    >
+      + Dodaj kategorię
+    </button>
+  </div>
+
+  <section class="mb-8">
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">Wydatki</h3>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      {% include "partials/categories/category_grid.html" with category_list=expense_categories only %}
+      {% if not expense_categories %}
+      <p class="col-span-full text-sm text-zinc-500">Brak kategorii wydatków.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section>
+    <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">Wpływy</h3>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      {% include "partials/categories/category_grid.html" with category_list=income_categories only %}
+      {% if not income_categories %}
+      <p class="col-span-full text-sm text-zinc-500">Brak kategorii wpływów.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>

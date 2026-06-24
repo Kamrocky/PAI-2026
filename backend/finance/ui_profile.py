@@ -3,8 +3,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from ninja import Form, Router
 
-from .auth_utils import get_authenticated_user
-from .ui_utils import get_ui_context
+from .auth_utils import get_authenticated_user, get_display_name
 
 router = Router(tags=["profile-ui"])
 
@@ -12,12 +11,17 @@ SECTION_TEMPLATE = "partials/profile_section.html"
 NAV_GREETING_TEMPLATE = "partials/nav_greeting.html"
 
 
-def _render_profile_section(request, user, *, error=None, success=None, refresh_nav=False):
-    context = {**get_ui_context(user)}
+def _profile_context(user, *, error: str | None = None, success: str | None = None) -> dict:
+    context = {"user": user, "display_name": get_display_name(user)}
     if error:
         context["error"] = error
     if success:
         context["success"] = success
+    return context
+
+
+def _render_profile_section(request, user, *, error=None, success=None, refresh_nav=False):
+    context = _profile_context(user, error=error, success=success)
     section_html = render_to_string(SECTION_TEMPLATE, context, request=request)
     if refresh_nav:
         nav_html = render_to_string(NAV_GREETING_TEMPLATE, context, request=request)

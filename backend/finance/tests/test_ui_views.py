@@ -91,13 +91,15 @@ class UIViewSmokeTest(TestCase):
         self.assertIn("Konto B", content)
         self.assertNotIn(f">{first.name}</h2>", content)
 
-    def test_authenticated_categories_renders_placeholder(self):
+    def test_authenticated_categories_renders_category_sections(self):
         self.client.login(username="jan@example.com", password=self.password)
         response = self.client.get("/categories/")
         content = response.content.decode()
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Kategorie", content)
-        self.assertIn('hx-get="/api/ui/categories"', content)
+        self.assertIn('id="categories-content"', content)
+        self.assertIn("Wydatki", content)
+        self.assertIn("Wpływy", content)
+        self.assertIn("Dodaj kategorię", content)
         self.assertNotIn("Zarządzanie", content)
 
     def test_authenticated_stats_renders_placeholder(self):

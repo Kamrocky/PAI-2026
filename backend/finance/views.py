@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from .auth_utils import get_display_name
+from .categories_service import get_categories_context
 from .home_service import get_home_context
 
 AUTH_SHELL_TEMPLATE = "auth.html"
@@ -24,12 +25,15 @@ def _render_authenticated_view(request, view_name: str, extra_context: dict | No
     if not request.user.is_authenticated:
         return _render_auth_shell(request)
 
-def _render_authenticated_view(request, view_name: str, extra_context: dict | None = None):
-    if not request.user.is_authenticated:
-        return _render_auth_shell(request)
-
     if view_name == "home":
         return render(request, "home.html", get_home_context(request.user, request))
+
+    if view_name == "categories":
+        return render(
+            request,
+            "categories.html",
+            {**_authenticated_context(request), **get_categories_context(request.user)},
+        )
 
     ctx = {**_authenticated_context(request), **(extra_context or {})}
     return render(request, VIEW_TEMPLATES[view_name], ctx)
