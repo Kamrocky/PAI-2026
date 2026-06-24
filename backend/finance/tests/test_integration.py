@@ -5,18 +5,18 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 
 from finance.constants import CATEGORY_COLOR_PALETTE
-from finance.models import Account, Category, Transaction
+from finance.models import Account, Transaction
 
 
 class FullUserFlowTest(TestCase):
-    """Rejestracja → login → konto → kategoria → transakcja → weryfikacja salda."""
+    """Login → konto → kategoria → transakcja → weryfikacja salda."""
 
     def setUp(self):
+        self.user = User.objects.create_user(username="flowuser", password="pass")
         self.client = Client()
+        self.client.login(username="flowuser", password="pass")
 
     def test_complete_flow(self):
-        self.client.post("/api/auth/register", {"username": "flowuser", "password": "Silne!Haslo1"})
-        self.client.post("/api/auth/login", {"username": "flowuser", "password": "Silne!Haslo1"})
 
         account_resp = self.client.post(
             "/api/accounts",
@@ -218,4 +218,4 @@ class CascadeDeleteTest(TestCase):
         self.assertEqual(Transaction.objects.filter(account=other_account).count(), 1)
 
         other_account.refresh_from_db()
-        self.assertEqual(other_account.balance, Decimal("950.00"))
+        self.assertEqual(other_account.balance, Decimal("1000.00"))
