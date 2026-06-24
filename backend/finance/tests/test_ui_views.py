@@ -99,7 +99,7 @@ class UIViewSmokeTest(TestCase):
         self.assertIn('id="categories-content"', content)
         self.assertIn("Wydatki", content)
         self.assertIn("Wpływy", content)
-        self.assertIn("Dodaj kategorię", content)
+        self.assertIn("Nowa kategoria", content)
         self.assertNotIn("Zarządzanie", content)
 
     def test_authenticated_stats_renders_placeholder(self):

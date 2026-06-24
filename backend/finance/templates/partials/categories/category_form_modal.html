@@ -6,7 +6,7 @@
 >
   <div
     data-home-modal-card
-    class="w-full max-w-md rounded-xl border border-white/10 bg-zinc-900/95 p-6 shadow-xl"
+    class="w-full max-w-lg rounded-xl border border-white/10 bg-zinc-900/95 p-6 shadow-xl"
   >
     <h2 id="category-edit-title" class="text-lg font-semibold text-zinc-50">Edytuj kategorię</h2>
 
@@ -18,11 +18,11 @@
       hx-post="/api/ui/categories/{{ editing_category.id }}/edit"
       hx-target="#categories-content"
       hx-swap="none"
-      class="mt-5 space-y-4"
+      class="mt-5 space-y-4 text-sm"
     >
       {% csrf_token %}
       {% include "partials/categories/category_form_fields.html" with category=editing_category %}
-      <div class="flex flex-wrap gap-2 border-t border-white/10 pt-4">
+      <div class="flex flex-wrap gap-2 pt-1">
         <button
           type="submit"
           class="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400"
@@ -38,16 +38,19 @@
         >
           Anuluj
         </button>
-        <button
-          type="button"
-          hx-get="/api/ui/categories/{{ editing_category.id }}/delete-confirm"
-          hx-target="#home-modal"
-          hx-swap="innerHTML"
-          class="ml-auto rounded-lg border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-200 hover:bg-rose-500/20"
-        >
-          Usuń kategorię
-        </button>
       </div>
     </form>
+
+    <div class="mt-6 border-t border-white/10 pt-4">
+      <button
+        type="button"
+        hx-get="/api/ui/categories/{{ editing_category.id }}/delete-confirm"
+        hx-target="#home-modal"
+        hx-swap="innerHTML"
+        class="text-sm text-rose-300 hover:text-rose-200 hover:underline"
+      >
+        Usuń kategorię
+      </button>
+    </div>
   </div>
 </div>
