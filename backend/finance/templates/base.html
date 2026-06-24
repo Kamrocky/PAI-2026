@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}CoinZen{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body class="min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100 antialiased {% block body_class %}{% endblock %}">
+    {% include "partials/coinzen_auth_background.html" %}
+    <header class="relative z-30 border-b border-white/10">
+      <div
+        class="pointer-events-none absolute inset-0 {% block header_class %}bg-zinc-950/55 backdrop-blur-xl{% endblock %}"
+        aria-hidden="true"
+      ></div>
+      <nav class="relative flex w-full items-center justify-between px-6 py-4 sm:px-8 lg:px-10">
+        <a href="{% url 'home' %}" class="text-lg font-semibold tracking-tight text-zinc-100 hover:text-white">
+          CoinZen
+        </a>
+        {% block nav_right %}{% endblock %}
+      </nav>
+    </header>
+
+    <main class="relative z-10 mx-auto w-full max-w-6xl px-4 py-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <script>
+      document.body.addEventListener("htmx:configRequest", (event) => {
+        const token = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+        if (token) {
+          event.detail.headers["X-CSRFToken"] = token;
+        }
+      });
+    </script>
+    {% block body_end %}{% endblock %}
+  </body>
+</html>

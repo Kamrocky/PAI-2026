@@ -80,7 +80,7 @@ class AuthAPITest(TestCase):
             {"email": "jan@example.com", "password": self.password},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Zarządzanie", response.content.decode())
+        self.assertIn("Widok w budowie", response.content.decode())
 
     def test_login_wrong_password(self):
         User.objects.create_user(

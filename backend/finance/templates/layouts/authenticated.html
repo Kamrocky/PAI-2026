@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block nav_right %}
+  {% include "partials/nav_user_info.html" %}
+{% endblock %}
+
+{% block content %}
+  {% include "partials/view_panel_open.html" %}
+    {% block page_content %}{% endblock %}
+  {% include "partials/view_panel_close.html" %}
+{% endblock %}

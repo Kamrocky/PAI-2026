@@ -1,0 +1,28 @@
+{% with current_tab=active_tab|default:request.resolver_match.url_name %}
+{% with tab_inactive="mb-0 border-b-transparent bg-zinc-900/35 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200" %}
+{% with tab_active="relative z-10 -mb-px border-b-0 bg-zinc-900/70 text-emerald-300" %}
+{% with tab_base="rounded-t-lg border border-white/10 px-4 py-2 text-sm font-medium transition-colors" %}
+<nav class="flex items-end gap-1" aria-label="Główne widoki">
+  <a
+    href="{% url 'home' %}"
+    class="{{ tab_base }} {% if current_tab == 'home' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
+  >
+    Home
+  </a>
+  <a
+    href="{% url 'stats' %}"
+    class="{{ tab_base }} {% if current_tab == 'stats' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
+  >
+    Statystyki
+  </a>
+  <a
+    href="{% url 'categories' %}"
+    class="{{ tab_base }} {% if current_tab == 'categories' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
+  >
+    Kategorie
+  </a>
+</nav>
+{% endwith %}
+{% endwith %}
+{% endwith %}
+{% endwith %}
