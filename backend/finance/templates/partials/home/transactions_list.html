@@ -1,0 +1,100 @@
+<div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-sm font-medium uppercase tracking-wide text-zinc-400">Transakcje</h2>
+    <div class="flex flex-wrap items-center gap-2">
+      {% if active_account %}
+        <button
+          type="button"
+          hx-get="/api/ui/home/transactions/create"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-lg leading-none text-zinc-300 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-200"
+          aria-label="Dodaj transakcję"
+        >
+          +
+        </button>
+      {% endif %}
+      {% if transactions_page %}
+        {% if transactions_expanded %}
+          <form
+            hx-post="/api/ui/home/transactions/collapse"
+            hx-target="#home-transactions"
+            hx-swap="outerHTML"
+            class="inline"
+          >
+            {% csrf_token %}
+            <button type="submit" class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
+              Zwiń
+            </button>
+          </form>
+        {% elif transactions_page.has_more %}
+          <form
+            hx-post="/api/ui/home/transactions/expand"
+            hx-target="#home-transactions"
+            hx-swap="outerHTML"
+            class="inline"
+          >
+            {% csrf_token %}
+            <button type="submit" class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
+              Pokaż wszystkie
+            </button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if transactions_page and transactions_page.transactions %}
+    <ul class="mt-4 divide-y divide-white/10">
+      {% for txn in transactions_page.transactions %}
+        <li class="flex items-center gap-1">
+          <button
+            type="button"
+            hx-get="/api/ui/home/transactions/{{ txn.id }}"
+            hx-target="#home-modal"
+            hx-swap="innerHTML"
+            class="flex min-w-0 flex-1 items-center gap-3 py-3 pl-1 text-left transition-colors hover:bg-white/5"
+          >
+            {% if txn.category %}
+              <span
+                class="h-2.5 w-2.5 shrink-0 rounded-full"
+                style="background-color: {{ txn.category.color }}"
+                aria-hidden="true"
+              ></span>
+            {% else %}
+              <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-zinc-600" aria-hidden="true"></span>
+            {% endif %}
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-medium text-zinc-100">{{ txn.title }}</span>
+              <span class="mt-0.5 block text-xs text-zinc-400">
+                {{ txn.date|date:"d.m.Y H:i" }}
+                {% if txn.category %} · {{ txn.category.name }}{% endif %}
+              </span>
+            </span>
+            <span class="shrink-0 pr-2 font-mono text-sm font-semibold {% if txn.amount >= 0 %}text-emerald-300{% else %}text-rose-300{% endif %}">
+              {% if txn.amount >= 0 %}+{% endif %}{{ txn.amount }} {{ active_account.currency }}
+            </span>
+          </button>
+          <button
+            type="button"
+            hx-get="/api/ui/home/transactions/{{ txn.id }}/edit"
+            hx-target="#home-modal"
+            hx-swap="innerHTML"
+            class="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-200"
+            aria-label="Edytuj transakcję {{ txn.title }}"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="m2.695 14.762-1.262 3.154a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
+            </svg>
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if transactions_expanded and transactions_page.num_pages > 1 %}
+      {% include "partials/home/transactions_pagination.html" %}
+    {% endif %}
+  {% else %}
+    <p class="mt-4 text-sm text-zinc-400">Brak transakcji na tym koncie.</p>
+  {% endif %}
+</div>

@@ -1,14 +1,8 @@
-from datetime import datetime
-from decimal import Decimal, InvalidOperation
-
-from django.utils import timezone
-from pydantic import ValidationError as PydanticValidationError
 from ninja import Form, Router
 
-from .api_accounts import get_user_account
-from .api_transactions import get_user_transaction, resolve_category
+from .api_transactions import get_user_transaction
 from .auth_utils import get_authenticated_user
-from .schemas import TransactionIn
+from .transaction_forms import apply_transaction_payload, validate_transaction_form
 from .transaction_service import (
     create_transaction,
     delete_transaction,
@@ -19,72 +13,6 @@ from .ui_utils import render_section_response
 router = Router(tags=["transactions-ui"])
 
 SECTION_TEMPLATE = "partials/transactions_section.html"
-
-
-def _parse_optional_int(value: str) -> int | None:
-    value = (value or "").strip()
-    if not value:
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        return None
-
-
-def _parse_transaction_date(value: str) -> datetime | None:
-    value = (value or "").strip()
-    if not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value)
-    except ValueError:
-        return None
-    if timezone.is_naive(parsed):
-        return timezone.make_aware(parsed, timezone.get_current_timezone())
-    return parsed
-
-
-def _validate_transaction_form(
-    account_id: str,
-    category_id: str,
-    amount: str,
-    title: str,
-    description: str,
-    date: str,
-) -> tuple[TransactionIn | None, str | None]:
-    parsed_account_id = _parse_optional_int(account_id)
-    if parsed_account_id is None:
-        return None, "Wybierz konto."
-
-    try:
-        amount_decimal = Decimal(amount)
-    except InvalidOperation:
-        return None, "Nieprawidłowa kwota."
-
-    parsed_date = _parse_transaction_date(date)
-    if date.strip() and parsed_date is None:
-        return None, "Nieprawidłowa data transakcji."
-
-    try:
-        payload = TransactionIn(
-            account_id=parsed_account_id,
-            category_id=_parse_optional_int(category_id),
-            amount=amount_decimal,
-            title=title,
-            description=description or "",
-            date=parsed_date,
-        )
-    except PydanticValidationError as exc:
-        messages = [err["msg"] for err in exc.errors()]
-        return None, "; ".join(messages)
-    return payload, None
-
-
-def _apply_transaction_payload(user, payload: TransactionIn):
-    account = get_user_account(user, payload.account_id)
-    category = resolve_category(user, payload.category_id)
-    data = payload.model_dump()
-    return account, category, data
 
 
 @router.get("")
@@ -104,13 +32,13 @@ def create_transaction_ui(
     date: str = Form(""),
 ):
     user = get_authenticated_user(request)
-    payload, error = _validate_transaction_form(
+    payload, error = validate_transaction_form(
         account_id, category_id, amount, title, description, date
     )
     if error:
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
 
-    account, category, data = _apply_transaction_payload(user, payload)
+    account, category, data = apply_transaction_payload(user, payload)
     create_transaction(
         account=account,
         category=category,
@@ -153,7 +81,7 @@ def update_transaction_ui(
 ):
     user = get_authenticated_user(request)
     txn = get_user_transaction(user, transaction_id)
-    payload, error = _validate_transaction_form(
+    payload, error = validate_transaction_form(
         account_id, category_id, amount, title, description, date
     )
     if error:
@@ -165,7 +93,7 @@ def update_transaction_ui(
             extra_context={"editing_transaction": txn},
         )
 
-    account, category, data = _apply_transaction_payload(user, payload)
+    account, category, data = apply_transaction_payload(user, payload)
     update_transaction(
         txn,
         account=account,

@@ -3,16 +3,20 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import AbstractBaseUser
+from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import HttpRequest
 from django.utils import timezone
 
 from .constants import ALLOWED_CURRENCIES, CURRENCY_LABELS
-from .models import Account, Transaction
+from .models import Account, Category, Transaction
 
 HOME_ACCOUNT_SESSION_KEY = "home_account_id"
 HOME_SLOT_NEW = "new"
+HOME_TXN_EXPANDED_KEY = "home_txn_expanded"
 PERIOD_DAYS = 30
+COLLAPSED_TXN_LIMIT = 5
+EXPANDED_TXN_PAGE_SIZE = 10
 
 
 @dataclass(frozen=True)
@@ -28,11 +32,108 @@ class MonthComparison:
     has_previous_data: bool
 
 
+@dataclass(frozen=True)
+class AccountTransactionsPage:
+    transactions: list[Transaction]
+    page: int
+    num_pages: int
+    total_count: int
+    has_more: bool
+    expanded: bool
+    page_size: int
+    page_numbers: list[int]
+
+
+def clear_transactions_view_state(request: HttpRequest) -> None:
+    request.session.pop(HOME_TXN_EXPANDED_KEY, None)
+
+
+def set_transactions_expanded(request: HttpRequest, expanded: bool) -> None:
+    if expanded:
+        request.session[HOME_TXN_EXPANDED_KEY] = True
+    else:
+        request.session.pop(HOME_TXN_EXPANDED_KEY, None)
+
+
+def is_transactions_expanded(request: HttpRequest) -> bool:
+    return bool(request.session.get(HOME_TXN_EXPANDED_KEY))
+
+
+def get_account_transactions(
+    account: Account,
+    page: int = 1,
+    *,
+    expanded: bool = False,
+) -> AccountTransactionsPage:
+    queryset = (
+        Transaction.objects.filter(account=account)
+        .select_related("category")
+        .order_by("-date", "-id")
+    )
+    total_count = queryset.count()
+
+    if not expanded:
+        return AccountTransactionsPage(
+            transactions=list(queryset[:COLLAPSED_TXN_LIMIT]),
+            page=1,
+            num_pages=1,
+            total_count=total_count,
+            has_more=total_count > COLLAPSED_TXN_LIMIT,
+            expanded=False,
+            page_size=COLLAPSED_TXN_LIMIT,
+            page_numbers=[1],
+        )
+
+    paginator = Paginator(queryset, EXPANDED_TXN_PAGE_SIZE)
+    page_obj = paginator.get_page(page)
+    return AccountTransactionsPage(
+        transactions=list(page_obj.object_list),
+        page=page_obj.number,
+        num_pages=paginator.num_pages,
+        total_count=total_count,
+        has_more=total_count > COLLAPSED_TXN_LIMIT,
+        expanded=True,
+        page_size=EXPANDED_TXN_PAGE_SIZE,
+        page_numbers=list(paginator.page_range),
+    )
+
+
+def get_user_categories(user: AbstractBaseUser) -> list[Category]:
+    return list(Category.objects.filter(user=user).order_by("name", "id"))
+
+
+def get_home_transactions_context(
+    user: AbstractBaseUser,
+    request: HttpRequest,
+    active_account: Account | None,
+) -> dict:
+    if active_account is None:
+        return {
+            "transactions_page": None,
+            "transactions_expanded": False,
+            "categories": [],
+        }
+
+    expanded = is_transactions_expanded(request)
+    page = max(1, int(request.GET.get("page", 1)))
+    return {
+        "transactions_page": get_account_transactions(
+            active_account,
+            page=page,
+            expanded=expanded,
+        ),
+        "transactions_expanded": expanded,
+        "categories": get_user_categories(user),
+    }
+
+
 def get_user_accounts(user: AbstractBaseUser) -> list[Account]:
     return list(Account.objects.filter(user=user).order_by("id"))
 
 
 def set_home_slot(request: HttpRequest, slot: int | str) -> None:
+    if request.session.get(HOME_ACCOUNT_SESSION_KEY) != slot:
+        clear_transactions_view_state(request)
     request.session[HOME_ACCOUNT_SESSION_KEY] = slot
 
 
@@ -271,5 +372,6 @@ def get_home_context(user: AbstractBaseUser, request: HttpRequest) -> dict:
         context["period_stats"] = get_account_period_stats(active_account)
         context["month_comparison"] = comparison
         context["comparison_labels"] = get_comparison_labels(comparison)
+        context.update(get_home_transactions_context(user, request, active_account))
 
     return context
