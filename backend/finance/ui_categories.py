@@ -15,10 +15,21 @@ router = Router(tags=["categories-ui"])
 MODAL_CLOSE_HTML = '<div id="home-modal" hx-swap-oob="innerHTML"></div>'
 
 
-def render_categories_content(request, user) -> str:
+def render_categories_content(
+    request,
+    user,
+    *,
+    success: str | None = None,
+    error: str | None = None,
+) -> str:
+    context = get_categories_context(user)
+    if success:
+        context["success"] = success
+    if error:
+        context["error"] = error
     return render_to_string(
         "partials/categories/categories_content.html",
-        get_categories_context(user),
+        context,
         request=request,
     )
 
@@ -37,10 +48,19 @@ def render_categories_modal(
     return render_to_string(template_name, context, request=request)
 
 
-def render_categories_refresh_response(request, user) -> HttpResponse:
+def render_categories_refresh_response(
+    request,
+    user,
+    *,
+    success: str | None = None,
+    error: str | None = None,
+) -> HttpResponse:
     parts = [
         MODAL_CLOSE_HTML,
-        inject_oob_outer_swap(render_categories_content(request, user), "categories-content"),
+        inject_oob_outer_swap(
+            render_categories_content(request, user, success=success, error=error),
+            "categories-content",
+        ),
     ]
     return HttpResponse("".join(parts))
 
@@ -79,7 +99,7 @@ def create_category_ui(
         )
 
     Category.objects.create(user=user, **payload.model_dump())
-    return render_categories_refresh_response(request, user)
+    return render_categories_refresh_response(request, user, success="Kategoria została dodana.")
 
 
 @router.get("/{category_id}/delete-confirm")
@@ -134,7 +154,7 @@ def update_category_ui(
     category.name = payload.name
     category.color = payload.color
     category.save(update_fields=["name", "color"])
-    return render_categories_refresh_response(request, user)
+    return render_categories_refresh_response(request, user, success="Kategoria została zaktualizowana.")
 
 
 @router.delete("/{category_id}")
@@ -142,4 +162,4 @@ def delete_category_ui(request, category_id: int):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
     category.delete()
-    return render_categories_refresh_response(request, user)
+    return render_categories_refresh_response(request, user, success="Kategoria została usunięta.")

@@ -29,6 +29,8 @@ class CategoriesUiTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('id="categories-content"', content)
+        self.assertIn("Kategoria została dodana.", content)
+        self.assertIn("alert-auto-dismiss", content)
         self.assertIn("Jedzenie", content)
         self.assertIn("Wydatki", content)
         category = Category.objects.get(user=self.user, name="Jedzenie")
@@ -58,6 +60,8 @@ class CategoriesUiTest(TestCase):
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("Kategoria została zaktualizowana.", content)
+        self.assertIn("alert-auto-dismiss", content)
         self.assertIn("Nowa", content)
         self.assertNotIn("Stara", content)
         category.refresh_from_db()
@@ -70,6 +74,8 @@ class CategoriesUiTest(TestCase):
         content = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("Kategoria została usunięta.", content)
+        self.assertIn("alert-auto-dismiss", content)
         self.assertNotIn("Do usunięcia", content)
         self.assertFalse(Category.objects.filter(pk=category.pk).exists())
 
