@@ -1,9 +1,6 @@
 name: Lint
 
 on:
-  pull_request:
-    paths:
-      - 'backend/**'
   workflow_call:
 
 jobs:

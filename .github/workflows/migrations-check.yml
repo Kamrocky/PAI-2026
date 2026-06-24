@@ -1,9 +1,6 @@
 name: Migrations Check
 
 on:
-  pull_request:
-    paths:
-      - 'backend/**'
   workflow_call:
 
 jobs:
