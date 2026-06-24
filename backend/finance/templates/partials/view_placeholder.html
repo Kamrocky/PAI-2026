@@ -1,2 +1,7 @@
-<h1 class="text-xl font-semibold tracking-tight text-zinc-50">{{ page_title }}</h1>
-<p class="mt-2 text-sm text-zinc-400">Widok w budowie.</p>
+{% if page_title == "Kategorie" %}
+  <div hx-get="/api/ui/categories" hx-trigger="load" hx-swap="outerHTML">
+  </div>
+{% else %}
+  <h1 class="text-xl font-semibold tracking-tight text-zinc-50">{{ page_title }}</h1>
+  <p class="mt-2 text-sm text-zinc-400">Widok w budowie.</p>
+{% endif %}
