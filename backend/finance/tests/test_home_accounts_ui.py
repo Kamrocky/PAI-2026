@@ -59,7 +59,7 @@ class HomeAccountUiTest(TestCase):
             balance=Decimal("100.00"),
             currency="PLN",
         )
-        second = Account.objects.create(
+        Account.objects.create(
             user=self.user,
             name="Konto B",
             balance=Decimal("200.00"),

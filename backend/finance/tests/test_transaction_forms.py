@@ -82,4 +82,3 @@ class ValidateTransactionFormCategoryTest(TestCase):
         )
 
         self.assertEqual(error, "Dla wpływu wybierz kategorię wpływów.")
-

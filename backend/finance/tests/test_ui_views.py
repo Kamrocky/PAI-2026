@@ -64,7 +64,7 @@ class UIViewSmokeTest(TestCase):
     def test_navigate_account_switches_displayed_account(self):
         user = User.objects.get(username="jan@example.com")
         first = Account.objects.create(user=user, name="Konto A", balance="100.00")
-        second = Account.objects.create(user=user, name="Konto B", balance="200.00")
+        Account.objects.create(user=user, name="Konto B", balance="200.00")
         self.client.login(username="jan@example.com", password=self.password)
 
         response = self.client.post(
