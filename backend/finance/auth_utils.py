@@ -4,8 +4,6 @@ from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from ninja.errors import HttpError
 
-from .ui_utils import get_ui_context
-
 
 def get_display_name(user) -> str:
     first_name = (getattr(user, "first_name", "") or "").strip()
@@ -16,10 +14,6 @@ def get_display_name(user) -> str:
     if "@" in email:
         return email.split("@", 1)[0]
     return email or "Użytkowniku"
-
-
-def get_dashboard_context(user):
-    return get_ui_context(user)
 
 
 def render_user_info(request, *, logged_in: bool) -> str:
@@ -59,13 +53,15 @@ def render_auth_step(
 
 
 def render_auth_success(request, user) -> HttpResponse:
-    dashboard_html = render_to_string(
-        "dashboard_partial.html",
-        get_dashboard_context(user),
+    content_html = render_to_string(
+        "partials/home_panel.html",
+        {"active_tab": "home"},
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=True)
-    return HttpResponse(f"{user_info_html}{dashboard_html}")
+    response = HttpResponse(f"{user_info_html}{content_html}")
+    response["HX-Push-Url"] = "/"
+    return response
 
 
 def render_logout_success(request) -> HttpResponse:

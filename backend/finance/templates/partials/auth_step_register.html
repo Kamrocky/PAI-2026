@@ -1,55 +1,55 @@
 <div class="text-center">
-    <h2 class="text-2xl font-bold text-gray-900">Utwórz konto</h2>
-    <p class="mt-2 text-sm text-gray-500">Nie znaleźliśmy konta dla tego adresu.</p>
-    <p class="mt-3 inline-block rounded-full bg-gray-100 px-3 py-1 text-sm font-mono text-gray-700">
+    <h2 class="text-2xl font-semibold tracking-tight text-zinc-50">Utwórz konto</h2>
+    <p class="mt-2 text-sm text-zinc-300">Nie znaleźliśmy konta dla tego adresu.</p>
+    <p class="mt-3 inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-mono text-zinc-200">
         {{ email }}
     </p>
 
     <form hx-post="/api/auth/register"
-          hx-target="#main-content"
+          hx-target="#page-content"
           hx-swap="innerHTML"
           class="mt-6 space-y-4 text-left text-sm">
         {% csrf_token %}
         <input type="hidden" name="email" value="{{ email }}">
         <label class="block">
-            <span class="mb-1 block text-xs font-medium text-gray-600">Imię</span>
+            <span class="mb-1 block text-xs font-medium text-zinc-300">Imię</span>
             <input type="text"
                    name="first_name"
                    placeholder="Jak mamy się do Ciebie zwracać?"
                    autocomplete="given-name"
                    autofocus
                    required
-                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+                   class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
         </label>
         <label class="block">
-            <span class="mb-1 block text-xs font-medium text-gray-600">Hasło</span>
+            <span class="mb-1 block text-xs font-medium text-zinc-300">Hasło</span>
             <input type="password"
                    name="password"
                    placeholder="Minimum 8 znaków"
                    autocomplete="new-password"
                    required
-                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+                   class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
         </label>
         <label class="block">
-            <span class="mb-1 block text-xs font-medium text-gray-600">Powtórz hasło</span>
+            <span class="mb-1 block text-xs font-medium text-zinc-300">Powtórz hasło</span>
             <input type="password"
                    name="password_confirm"
                    placeholder="Powtórz hasło"
                    autocomplete="new-password"
                    required
-                   class="w-full rounded border border-gray-300 p-2 focus:border-blue-500 focus:outline-none">
+                   class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
         </label>
         <button type="submit"
-                class="w-full rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">
+                class="w-full rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400">
             Utwórz konto
         </button>
     </form>
 
     <button type="button"
             hx-get="/api/auth"
-            hx-target="#main-content"
+            hx-target="#page-content"
             hx-swap="innerHTML"
-            class="mt-4 text-sm text-blue-600 hover:underline">
+            class="mt-4 text-sm text-emerald-300 hover:text-emerald-200 hover:underline">
         Użyj innego adresu e-mail
     </button>
 </div>
