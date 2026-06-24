@@ -4,8 +4,6 @@ from django.http import HttpRequest, HttpResponse
 from django.template.loader import render_to_string
 from ninja.errors import HttpError
 
-from .ui_utils import get_ui_context
-
 
 def get_display_name(user) -> str:
     first_name = (getattr(user, "first_name", "") or "").strip()
@@ -16,10 +14,6 @@ def get_display_name(user) -> str:
     if "@" in email:
         return email.split("@", 1)[0]
     return email or "Użytkowniku"
-
-
-def get_dashboard_context(user):
-    return get_ui_context(user)
 
 
 def render_user_info(request, *, logged_in: bool) -> str:

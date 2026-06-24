@@ -2,31 +2,40 @@ from django.shortcuts import render
 
 from .auth_utils import get_display_name
 
+AUTH_SHELL_TEMPLATE = "auth.html"
+VIEW_TEMPLATES = {
+    "home": "home.html",
+    "categories": "categories.html",
+    "stats": "stats.html",
+}
+
 
 def _authenticated_context(request):
     return {"display_name": get_display_name(request.user)}
 
 
 def _render_auth_shell(request):
-    return render(request, "index.html", {})
+    return render(request, AUTH_SHELL_TEMPLATE, {})
+
+
+def _render_authenticated_view(request, view_name: str):
+    if not request.user.is_authenticated:
+        return _render_auth_shell(request)
+
+    return render(
+        request,
+        VIEW_TEMPLATES[view_name],
+        _authenticated_context(request),
+    )
 
 
 def home(request):
-    if not request.user.is_authenticated:
-        return _render_auth_shell(request)
-
-    return render(request, "home.html", _authenticated_context(request))
+    return _render_authenticated_view(request, "home")
 
 
 def categories(request):
-    if not request.user.is_authenticated:
-        return _render_auth_shell(request)
-
-    return render(request, "categories.html", _authenticated_context(request))
+    return _render_authenticated_view(request, "categories")
 
 
 def stats(request):
-    if not request.user.is_authenticated:
-        return _render_auth_shell(request)
-
-    return render(request, "stats.html", _authenticated_context(request))
+    return _render_authenticated_view(request, "stats")
