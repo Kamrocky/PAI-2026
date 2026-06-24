@@ -1,14 +1,17 @@
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from ninja import Form, Router
 
-from .auth_utils import get_authenticated_user, get_display_name
+from .auth_utils import get_authenticated_user, get_display_name, render_logout_success
+from .profile_service import clear_user_finance_data, delete_user_account
 
 router = Router(tags=["profile-ui"])
 
 SECTION_TEMPLATE = "partials/profile_section.html"
 NAV_GREETING_TEMPLATE = "partials/nav_greeting.html"
+MODAL_CLOSE_HTML = '<div id="home-modal" hx-swap-oob="innerHTML"></div>'
 
 
 def _profile_context(user, *, error: str | None = None, success: str | None = None) -> dict:
@@ -51,19 +54,6 @@ def update_name(request, first_name: str = Form(...)):
     return _render_profile_section(request, user, success="Imię zostało zaktualizowane.", refresh_nav=True)
 
 
-@router.post("/email")
-def update_email(request, email: str = Form(...)):
-    user = get_authenticated_user(request)
-    email = email.strip().lower()
-    if not email:
-        return _render_profile_section(request, user, error="E-mail nie może być pusty.")
-    if User.objects.filter(email=email).exclude(pk=user.pk).exists():
-        return _render_profile_section(request, user, error="Ten adres e-mail jest już zajęty.")
-    User.objects.filter(pk=user.pk).update(email=email, username=email)
-    user.email = email
-    return _render_profile_section(request, user, success="Adres e-mail został zaktualizowany.")
-
-
 @router.post("/password")
 def update_password(
     request,
@@ -81,3 +71,49 @@ def update_password(
     user.set_password(new_password)
     user.save()
     return _render_profile_section(request, user, success="Hasło zostało zmienione.")
+
+
+@router.get("/clear-data/confirm")
+def clear_data_confirm(request):
+    get_authenticated_user(request)
+    modal_html = render_to_string(
+        "partials/profile/clear_data_confirm_modal.html",
+        {},
+        request=request,
+    )
+    return HttpResponse(modal_html)
+
+
+@router.post("/clear-data")
+def clear_data(request):
+    user = get_authenticated_user(request)
+    clear_user_finance_data(user)
+    response = _render_profile_section(
+        request,
+        user,
+        success="Wszystkie konta, transakcje i kategorie zostały usunięte.",
+    )
+    return HttpResponse(MODAL_CLOSE_HTML + response.content.decode())
+
+
+@router.get("/delete-account/confirm")
+def delete_account_confirm(request):
+    user = get_authenticated_user(request)
+    modal_html = render_to_string(
+        "partials/profile/delete_account_confirm_modal.html",
+        {"user": user},
+        request=request,
+    )
+    return HttpResponse(modal_html)
+
+
+@router.delete("/account")
+def delete_account(request):
+    user = get_authenticated_user(request)
+    user_pk = user.pk
+    logout(request)
+    delete_user_account(User.objects.get(pk=user_pk))
+    response = render_logout_success(request)
+    response.content = (MODAL_CLOSE_HTML + response.content.decode()).encode()
+    response["HX-Push-Url"] = "/"
+    return response

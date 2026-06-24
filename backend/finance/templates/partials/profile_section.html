@@ -27,28 +27,10 @@
       </form>
     </div>
 
-    <!-- E-mail -->
+    <!-- E-mail (tylko do odczytu) -->
     <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
       <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Adres e-mail</h3>
-      <form hx-post="/api/ui/profile/email" hx-target="#profile-section" hx-swap="outerHTML">
-        {% csrf_token %}
-        <div class="space-y-3">
-          <input
-            type="email"
-            name="email"
-            value="{{ user.email }}"
-            placeholder="adres@email.com"
-            required
-            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
-          />
-          <button
-            type="submit"
-            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
-          >
-            Zapisz e-mail
-          </button>
-        </div>
-      </form>
+      <p class="text-sm text-zinc-300">{{ user.email }}</p>
     </div>
 
     <!-- Hasło -->
@@ -86,6 +68,40 @@
           </button>
         </div>
       </form>
+    </div>
+
+    <!-- Wyczyść dane -->
+    <div class="rounded-xl border border-rose-500/20 bg-rose-950/20 p-5">
+      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-300">Wyczyść dane</h3>
+      <p class="mb-4 text-sm leading-relaxed text-zinc-400">
+        Usuń wszystkie konta, transakcje i kategorie. Twoje konto użytkownika pozostanie aktywne.
+      </p>
+      <button
+        type="button"
+        hx-get="/api/ui/profile/clear-data/confirm"
+        hx-target="#home-modal"
+        hx-swap="innerHTML"
+        class="rounded-lg border border-rose-500/40 bg-rose-600/20 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-600/30"
+      >
+        Wyczyść wszystkie dane
+      </button>
+    </div>
+
+    <!-- Usuń konto -->
+    <div class="rounded-xl border border-rose-500/30 bg-rose-950/30 p-5">
+      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-300">Usuń konto</h3>
+      <p class="mb-4 text-sm leading-relaxed text-zinc-400">
+        Trwale usuń konto użytkownika wraz ze wszystkimi danymi.
+      </p>
+      <button
+        type="button"
+        hx-get="/api/ui/profile/delete-account/confirm"
+        hx-target="#home-modal"
+        hx-swap="innerHTML"
+        class="rounded-lg border border-rose-500/40 bg-rose-600/20 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-600/30"
+      >
+        Usuń konto na zawsze
+      </button>
     </div>
 
   </div>
