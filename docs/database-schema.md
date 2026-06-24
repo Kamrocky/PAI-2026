@@ -1,6 +1,6 @@
 # Schemat bazy danych
 
-Projekt używa bazy danych PostgreSQL. Definicje tabel znajdują się w `backend/finance/models.py`. Tworzone są poprzed migrację z odpowiednimi nazwami <nazwa_aplikacji>_<nazwa_modelu> w `backend/finance/migrations/0001_initial.py`
+Projekt używa bazy danych PostgreSQL. Definicje tabel znajdują się w `backend/finance/models.py`. Tworzone są poprzez migrację z odpowiednimi nazwami <nazwa_aplikacji>_<nazwa_modelu> w `backend/finance/migrations/0001_initial.py`
 
 ## Diagram
 
