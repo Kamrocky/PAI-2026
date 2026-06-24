@@ -9,21 +9,21 @@
     {% block head %}{% endblock %}
   </head>
   <body class="min-h-screen overflow-x-hidden bg-zinc-950 text-zinc-100 antialiased {% block body_class %}{% endblock %}">
+    {% include "partials/coinzen_auth_background.html" %}
     <header class="relative z-30 border-b border-white/10">
       <div
-        class="pointer-events-none absolute inset-0 {% block header_class %}bg-zinc-950/80 backdrop-blur{% endblock %}"
+        class="pointer-events-none absolute inset-0 {% block header_class %}bg-zinc-950/55 backdrop-blur-xl{% endblock %}"
         aria-hidden="true"
       ></div>
       <nav class="relative flex w-full items-center justify-between px-6 py-4 sm:px-8 lg:px-10">
-        <a href="/" class="text-lg font-semibold tracking-tight text-zinc-100 hover:text-white">
+        <a href="{% url 'home' %}" class="text-lg font-semibold tracking-tight text-zinc-100 hover:text-white">
           CoinZen
         </a>
         {% block nav_right %}{% endblock %}
       </nav>
-      {% block nav %}{% endblock %}
     </header>
 
-    <main class="relative mx-auto w-full max-w-6xl px-4 py-8">
+    <main class="relative z-10 mx-auto w-full max-w-6xl px-4 py-8">
       {% block content %}{% endblock %}
     </main>
 

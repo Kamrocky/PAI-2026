@@ -59,18 +59,15 @@ def render_auth_step(
 
 
 def render_auth_success(request, user) -> HttpResponse:
-    dashboard_html = render_to_string(
-        "dashboard_partial.html",
-        get_dashboard_context(user),
+    content_html = render_to_string(
+        "partials/home_panel.html",
+        {"active_tab": "home"},
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=True)
-    content_html = (
-        '<div class="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm">'
-        f"{dashboard_html}"
-        "</div>"
-    )
-    return HttpResponse(f"{user_info_html}{content_html}")
+    response = HttpResponse(f"{user_info_html}{content_html}")
+    response["HX-Push-Url"] = "/"
+    return response
 
 
 def render_logout_success(request) -> HttpResponse:

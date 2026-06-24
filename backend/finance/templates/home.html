@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Home — CoinZen{% endblock %}
+
+{% block nav_right %}
+  {% include "partials/nav_user_info.html" %}
+{% endblock %}
+
+{% block content %}
+  {% include "partials/view_panel_open.html" %}
+    {% include "partials/view_placeholder.html" with page_title="Home" %}
+  {% include "partials/view_panel_close.html" %}
+{% endblock %}
