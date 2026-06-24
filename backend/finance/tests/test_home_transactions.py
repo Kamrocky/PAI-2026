@@ -223,6 +223,30 @@ class HomeTransactionsUiTest(TestCase):
         self.account.refresh_from_db()
         self.assertEqual(self.account.balance, Decimal("985.00"))
 
+    def test_create_transaction_rejects_wrong_category_type(self):
+        income_category = Category.objects.create(
+            user=self.user,
+            name="Pensja",
+            is_income=True,
+        )
+
+        response = self.client.post(
+            "/api/ui/home/transactions",
+            {
+                "account_id": self.account.pk,
+                "category_id": income_category.pk,
+                "amount": "-15.00",
+                "title": "Zły typ",
+                "description": "",
+                "date": "",
+            },
+        )
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Dla wydatku wybierz kategorię wydatków.", content)
+        self.assertFalse(Transaction.objects.filter(title="Zły typ").exists())
+
     def test_delete_transaction_shows_confirm_modal_and_updates_balance(self):
         txn = create_transaction(
             account=self.account,

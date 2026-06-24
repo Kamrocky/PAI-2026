@@ -244,7 +244,7 @@ def create_transaction_ui(
         return account
 
     payload, error = validate_transaction_form(
-        account_id, category_id, amount, title, description, date
+        user, account_id, category_id, amount, title, description, date
     )
     if error:
         return HttpResponse(
@@ -373,7 +373,7 @@ def update_transaction_ui(
         return HttpResponse("Transakcja nie istnieje.", status=404)
 
     payload, error = validate_transaction_form(
-        account_id, category_id, amount, title, description, date
+        user, account_id, category_id, amount, title, description, date
     )
     if error:
         return HttpResponse(

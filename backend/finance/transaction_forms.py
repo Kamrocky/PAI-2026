@@ -1,12 +1,14 @@
 from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 
+from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
 from pydantic import ValidationError as PydanticValidationError
 
 from .api_accounts import get_user_account
-from .api_transactions import resolve_category
+from .models import Category
 from .schemas import TransactionIn
+from .transaction_service import get_user_category
 
 
 def parse_optional_int(value: str) -> int | None:
@@ -46,7 +48,31 @@ def parse_transaction_date(value: str) -> datetime | None:
     return parsed
 
 
+def validate_category_amount_type(category: Category | None, amount: Decimal) -> str | None:
+    if category is None or amount == 0:
+        return None
+    if amount > 0 and not category.is_income:
+        return "Dla wpływu wybierz kategorię wpływów."
+    if amount < 0 and category.is_income:
+        return "Dla wydatku wybierz kategorię wydatków."
+    return None
+
+
+def validate_category_matches_amount(
+    user: AbstractBaseUser,
+    category_id: int | None,
+    amount: Decimal,
+) -> str | None:
+    if category_id is None:
+        return None
+    category = get_user_category(user, category_id)
+    if category is None:
+        return "Kategoria nie istnieje."
+    return validate_category_amount_type(category, amount)
+
+
 def validate_transaction_form(
+    user: AbstractBaseUser,
     account_id: str,
     category_id: str,
     amount: str,
@@ -67,10 +93,15 @@ def validate_transaction_form(
     if date.strip() and parsed_date is None:
         return None, "Nieprawidłowa data transakcji."
 
+    parsed_category_id = parse_optional_int(category_id)
+    category_error = validate_category_matches_amount(user, parsed_category_id, amount_decimal)
+    if category_error:
+        return None, category_error
+
     try:
         payload = TransactionIn(
             account_id=parsed_account_id,
-            category_id=parse_optional_int(category_id),
+            category_id=parsed_category_id,
             amount=amount_decimal,
             title=title,
             description=description or "",
@@ -84,6 +115,6 @@ def validate_transaction_form(
 
 def apply_transaction_payload(user, payload: TransactionIn):
     account = get_user_account(user, payload.account_id)
-    category = resolve_category(user, payload.category_id)
+    category = get_user_category(user, payload.category_id)
     data = payload.model_dump()
     return account, category, data

@@ -33,7 +33,7 @@ def create_transaction_ui(
 ):
     user = get_authenticated_user(request)
     payload, error = validate_transaction_form(
-        account_id, category_id, amount, title, description, date
+        user, account_id, category_id, amount, title, description, date
     )
     if error:
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
@@ -82,7 +82,7 @@ def update_transaction_ui(
     user = get_authenticated_user(request)
     txn = get_user_transaction(user, transaction_id)
     payload, error = validate_transaction_form(
-        account_id, category_id, amount, title, description, date
+        user, account_id, category_id, amount, title, description, date
     )
     if error:
         return render_section_response(
