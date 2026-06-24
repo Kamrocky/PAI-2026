@@ -6,21 +6,15 @@
   <a
     href="{% url 'home' %}"
     class="{{ tab_base }} {% if current_tab == 'home' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
-  >
-    Home
-  </a>
+  >Home</a>
   <a
     href="{% url 'stats' %}"
     class="{{ tab_base }} {% if current_tab == 'stats' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
-  >
-    Statystyki
-  </a>
+  >Statystyki</a>
   <a
     href="{% url 'categories' %}"
     class="{{ tab_base }} {% if current_tab == 'categories' %}{{ tab_active }}{% else %}{{ tab_inactive }}{% endif %}"
-  >
-    Kategorie
-  </a>
+  >Kategorie</a>
 </nav>
 {% endwith %}
 {% endwith %}
