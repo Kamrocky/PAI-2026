@@ -1,0 +1,40 @@
+{% if active_account and period_stats and comparison_labels %}
+  <div aria-label="Podsumowanie konta">
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h2 class="text-xl font-semibold tracking-tight text-zinc-50">{{ active_account.name }}</h2>
+        <p class="mt-2 font-mono text-2xl font-semibold text-emerald-300">
+          {{ active_account.balance }} {{ active_account.currency }}
+        </p>
+      </div>
+      <button
+        type="button"
+        hx-get="/api/ui/home/accounts/{{ active_account.id }}/edit"
+        hx-target="#home-modal"
+        hx-swap="innerHTML"
+        class="shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-200"
+        aria-label="Edytuj konto {{ active_account.name }}"
+      >
+        {% include "partials/ui/icon_edit.html" %}
+      </button>
+    </div>
+
+    <p class="mt-5 text-sm text-zinc-400">Ostatnie {{ period_days }} dni</p>
+
+    <dl class="mt-2 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+        <dt class="text-xs font-medium text-zinc-400">Wpływy</dt>
+        <dd class="mt-1 font-mono text-lg font-semibold text-emerald-300">+{{ period_stats.income }} {{ active_account.currency }}</dd>
+      </div>
+      <div class="rounded-lg border border-white/10 bg-white/5 p-4">
+        <dt class="text-xs font-medium text-zinc-400">Wydatki</dt>
+        <dd class="mt-1 font-mono text-lg font-semibold text-rose-300">-{{ period_stats.expenses }} {{ active_account.currency }}</dd>
+      </div>
+    </dl>
+
+    <div class="mt-4 space-y-1 text-sm text-zinc-400">
+      <p>{{ comparison_labels.expense_label }}</p>
+      <p>{{ comparison_labels.income_label }}</p>
+    </div>
+  </div>
+{% endif %}

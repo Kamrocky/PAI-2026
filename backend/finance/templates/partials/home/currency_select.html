@@ -1,0 +1,47 @@
+<div class="relative" data-currency-picker>
+  <input type="hidden" name="currency" value="{{ default_currency|default:'PLN' }}" data-currency-input />
+  <button
+    type="button"
+    data-currency-trigger
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    class="flex w-full items-center justify-between gap-3 rounded-lg border border-white/10 bg-zinc-950/40 px-3 py-2.5 text-left text-zinc-100 transition-colors hover:border-white/20 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+  >
+    <span class="min-w-0 truncate" data-currency-display>
+      <span class="font-mono font-semibold" data-currency-code>{{ default_currency|default:"PLN" }}</span>
+      <span class="text-zinc-500"> · </span>
+      <span class="text-zinc-300" data-currency-label>{{ default_currency_label|default:"Polski złoty" }}</span>
+    </span>
+    <svg
+      data-currency-chevron
+      class="h-4 w-4 shrink-0 text-zinc-500 transition-transform"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.08 1.04l-4.25 4.25a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+    </svg>
+  </button>
+  <ul
+    data-currency-menu
+    role="listbox"
+    class="absolute z-30 mt-1 hidden max-h-56 w-full overflow-y-auto rounded-lg border border-white/15 bg-zinc-900 py-1 shadow-2xl shadow-black/60"
+  >
+    {% for code, label in currency_choices %}
+      <li role="presentation">
+        <button
+          type="button"
+          role="option"
+          data-currency-option
+          data-value="{{ code }}"
+          data-label="{{ label }}"
+          aria-selected="{% if code == default_currency|default:'PLN' %}true{% else %}false{% endif %}"
+          class="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-white/10 {% if code == default_currency|default:'PLN' %}bg-emerald-500/15 text-emerald-100{% else %}text-zinc-100{% endif %}"
+        >
+          <span class="font-mono font-semibold">{{ code }}</span>
+          <span class="truncate text-zinc-400">{{ label }}</span>
+        </button>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

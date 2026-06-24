@@ -21,6 +21,29 @@ ALLOWED_CURRENCIES: tuple[str, ...] = (
     "INR",
 )
 
+CURRENCY_LABELS: dict[str, str] = {
+    "PLN": "Polski złoty",
+    "EUR": "Euro",
+    "USD": "Dolar amerykański",
+    "GBP": "Funt brytyjski",
+    "CHF": "Frank szwajcarski",
+    "CZK": "Korona czeska",
+    "SEK": "Korona szwedzka",
+    "NOK": "Korona norweska",
+    "DKK": "Korona duńska",
+    "HUF": "Forint węgierski",
+    "RON": "Lej rumuński",
+    "UAH": "Hrywna ukraińska",
+    "JPY": "Jen japoński",
+    "CNY": "Juan chiński",
+    "AUD": "Dolar australijski",
+    "CAD": "Dolar kanadyjski",
+    "NZD": "Dolar nowozelandzki",
+    "TRY": "Lira turecka",
+    "BRL": "Real brazylijski",
+    "INR": "Rupia indyjska",
+}
+
 CATEGORY_COLOR_PALETTE: tuple[str, ...] = (
     "#7C9EB2",  # slate
     "#4DB6A0",  # teal

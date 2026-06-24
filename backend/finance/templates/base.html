@@ -36,12 +36,113 @@
       {% block content %}{% endblock %}
     </main>
 
+    <div id="home-modal"></div>
+
     <script>
       document.body.addEventListener("htmx:configRequest", (event) => {
         const token = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
         if (token) {
           event.detail.headers["X-CSRFToken"] = token;
         }
+      });
+
+      function closeHomeModal() {
+        const modal = document.getElementById("home-modal");
+        if (!modal?.innerHTML.trim()) return;
+        htmx.ajax("GET", "/api/ui/home/modal/close", {
+          target: "#home-modal",
+          swap: "innerHTML",
+        });
+      }
+
+      function closeCurrencyPicker(picker) {
+        const menu = picker.querySelector("[data-currency-menu]");
+        const trigger = picker.querySelector("[data-currency-trigger]");
+        const chevron = picker.querySelector("[data-currency-chevron]");
+        menu?.classList.add("hidden");
+        trigger?.setAttribute("aria-expanded", "false");
+        chevron?.classList.remove("rotate-180");
+        picker.dataset.open = "false";
+      }
+
+      function closeAllCurrencyPickers(except) {
+        document.querySelectorAll("[data-currency-picker]").forEach((picker) => {
+          if (picker !== except) {
+            closeCurrencyPicker(picker);
+          }
+        });
+      }
+
+      function selectCurrencyOption(picker, option) {
+        const value = option.dataset.value;
+        const label = option.dataset.label;
+        const input = picker.querySelector("[data-currency-input]");
+        const codeEl = picker.querySelector("[data-currency-code]");
+        const labelEl = picker.querySelector("[data-currency-label]");
+
+        if (input) input.value = value;
+        if (codeEl) codeEl.textContent = value;
+        if (labelEl) labelEl.textContent = label;
+
+        picker.querySelectorAll("[data-currency-option]").forEach((item) => {
+          const selected = item === option;
+          item.setAttribute("aria-selected", selected ? "true" : "false");
+          item.classList.toggle("bg-emerald-500/15", selected);
+          item.classList.toggle("text-emerald-100", selected);
+          item.classList.toggle("text-zinc-100", !selected);
+        });
+
+        closeCurrencyPicker(picker);
+      }
+
+      document.addEventListener("click", (event) => {
+        const option = event.target.closest("[data-currency-option]");
+        if (option) {
+          event.preventDefault();
+          const picker = option.closest("[data-currency-picker]");
+          if (picker) {
+            selectCurrencyOption(picker, option);
+          }
+          return;
+        }
+
+        const trigger = event.target.closest("[data-currency-trigger]");
+        if (trigger) {
+          event.preventDefault();
+          const picker = trigger.closest("[data-currency-picker]");
+          if (!picker) return;
+
+          const menu = picker.querySelector("[data-currency-menu]");
+          const chevron = picker.querySelector("[data-currency-chevron]");
+          const willOpen = menu?.classList.contains("hidden");
+
+          closeAllCurrencyPickers(picker);
+          if (willOpen) {
+            menu?.classList.remove("hidden");
+            trigger.setAttribute("aria-expanded", "true");
+            chevron?.classList.add("rotate-180");
+            picker.dataset.open = "true";
+          } else {
+            closeCurrencyPicker(picker);
+          }
+          return;
+        }
+
+        if (!event.target.closest("[data-currency-picker]")) {
+          closeAllCurrencyPickers();
+        }
+
+        const modal = document.getElementById("home-modal");
+        if (modal?.innerHTML.trim() && !event.target.closest("[data-home-modal-card]")) {
+          closeHomeModal();
+        }
+      }, true);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        closeAllCurrencyPickers();
+        closeHomeModal();
       });
     </script>
     {% block body_end %}{% endblock %}

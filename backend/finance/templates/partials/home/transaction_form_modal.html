@@ -1,0 +1,183 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="transaction-form-title"
+>
+  <div
+    data-home-modal-card
+    class="w-full max-w-md rounded-xl border border-white/10 bg-zinc-900/95 p-6 shadow-xl"
+  >
+    <h2 id="transaction-form-title" class="text-lg font-semibold text-zinc-50">
+      {% if editing_transaction %}Edytuj transakcję{% else %}Dodaj transakcję{% endif %}
+    </h2>
+    {% if not editing_transaction %}
+      <p class="mt-1 text-sm text-zinc-400">Konto: <span class="text-zinc-200">{{ active_account.name }}</span></p>
+    {% endif %}
+
+    {% if error %}
+      <p class="mt-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{{ error }}</p>
+    {% endif %}
+
+    <form
+      data-transaction-form
+      {% if editing_transaction %}
+        hx-post="/api/ui/home/transactions/{{ editing_transaction.id }}/edit"
+      {% else %}
+        hx-post="/api/ui/home/transactions"
+      {% endif %}
+      hx-target="#home-content"
+      hx-swap="none"
+      class="mt-5 space-y-4 text-sm"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="account_id" value="{{ active_account.id }}" />
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Tytuł</span>
+        <input
+          type="text"
+          name="title"
+          value="{% if editing_transaction %}{{ editing_transaction.title }}{% endif %}"
+          required
+          autofocus
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Kwota</span>
+        <input
+          type="text"
+          name="amount"
+          data-txn-amount
+          value="{% if editing_transaction %}{{ editing_transaction.amount }}{% endif %}"
+          required
+          inputmode="decimal"
+          placeholder="-50.00"
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 font-mono text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+        <span class="mt-1 block text-xs text-zinc-500">Ujemna = wydatek, dodatnia = wpływ.</span>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Kategoria</span>
+        <select
+          name="category_id"
+          data-txn-category
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        >
+          <option value="">Brak kategorii</option>
+          {% for cat in categories %}
+            <option
+              value="{{ cat.id }}"
+              data-is-income="{{ cat.is_income|yesno:'true,false' }}"
+              {% if editing_transaction and editing_transaction.category_id == cat.id %}selected{% endif %}
+            >
+              {{ cat.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Opis</span>
+        <input
+          type="text"
+          name="description"
+          value="{% if editing_transaction %}{{ editing_transaction.description }}{% endif %}"
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Data</span>
+        <input
+          type="date"
+          name="date"
+          {% if editing_transaction %}required{% endif %}
+          value="{% if editing_transaction %}{{ editing_transaction.date|date:'Y-m-d' }}{% endif %}"
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+        {% if not editing_transaction %}
+          <span class="mt-1 block text-xs text-zinc-500">Pozostaw puste, aby użyć bieżącej daty.</span>
+        {% endif %}
+      </label>
+
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button
+          type="submit"
+          class="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400"
+        >
+          {% if editing_transaction %}Zapisz zmiany{% else %}Dodaj transakcję{% endif %}
+        </button>
+        <button
+          type="button"
+          hx-get="/api/ui/home/modal/close"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+          class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-zinc-200 hover:bg-white/10"
+        >
+          Anuluj
+        </button>
+      </div>
+    </form>
+
+    {% if editing_transaction %}
+      <div class="mt-6 border-t border-white/10 pt-4">
+        <button
+          type="button"
+          hx-get="/api/ui/home/transactions/{{ editing_transaction.id }}/delete-confirm?back=edit"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+          class="text-sm text-rose-300 hover:text-rose-200 hover:underline"
+        >
+          Usuń transakcję
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  (function () {
+    const form = document.querySelector("[data-transaction-form]");
+    if (!form) return;
+
+    const amountInput = form.querySelector("[data-txn-amount]");
+    const categorySelect = form.querySelector("[data-txn-category]");
+    if (!amountInput || !categorySelect) return;
+
+    function syncCategories() {
+      const raw = amountInput.value.trim().replace(",", ".");
+      const amount = Number.parseFloat(raw);
+      let incomeFilter = null;
+
+      if (raw !== "" && !Number.isNaN(amount)) {
+        if (amount < 0) {
+          incomeFilter = false;
+        } else if (amount > 0) {
+          incomeFilter = true;
+        }
+      }
+
+      let selectedHidden = false;
+      categorySelect.querySelectorAll("option[data-is-income]").forEach((option) => {
+        const isIncome = option.dataset.isIncome === "true";
+        const visible = incomeFilter === null || isIncome === incomeFilter;
+        option.hidden = !visible;
+        option.disabled = !visible;
+        if (option.selected && !visible) {
+          selectedHidden = true;
+        }
+      });
+
+      if (selectedHidden) {
+        categorySelect.value = "";
+      }
+    }
+
+    amountInput.addEventListener("input", syncCategories);
+    syncCategories();
+  })();
+</script>

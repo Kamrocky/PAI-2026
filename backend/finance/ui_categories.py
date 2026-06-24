@@ -1,56 +1,82 @@
-from pydantic import ValidationError as PydanticValidationError
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from ninja import Form, Router
 
 from .api_categories import get_user_category
 from .auth_utils import get_authenticated_user
+from .categories_service import get_categories_context
+from .category_forms import validate_category_form
 from .constants import DEFAULT_CATEGORY_COLOR
 from .models import Category
-from .schemas import CategoryIn
-from .ui_utils import TRANSACTIONS_SECTION, render_section_response
+from .ui_utils import inject_oob_outer_swap
 
 router = Router(tags=["categories-ui"])
 
-SECTION_TEMPLATE = "partials/categories_section.html"
+MODAL_CLOSE_HTML = '<div id="home-modal" hx-swap-oob="innerHTML"></div>'
 
 
-def _parse_is_income(value: str) -> bool:
-    return value.lower() in ("true", "on", "1")
+def render_categories_content(
+    request,
+    user,
+    *,
+    success: str | None = None,
+    error: str | None = None,
+) -> str:
+    context = get_categories_context(user)
+    if success:
+        context["success"] = success
+    if error:
+        context["error"] = error
+    return render_to_string(
+        "partials/categories/categories_content.html",
+        context,
+        request=request,
+    )
 
 
-def _validate_category_form(
-    name: str,
-    color: str,
-    is_income: str,
-) -> tuple[CategoryIn | None, str | None]:
-    try:
-        payload = CategoryIn(
-            name=name,
-            color=color or DEFAULT_CATEGORY_COLOR,
-            is_income=_parse_is_income(is_income),
-        )
-    except PydanticValidationError as exc:
-        messages = [err["msg"] for err in exc.errors()]
-        return None, "; ".join(messages)
-    return payload, None
+def render_categories_modal(
+    request,
+    user,
+    template_name: str,
+    *,
+    error: str | None = None,
+    extra_context: dict | None = None,
+) -> str:
+    context = {**get_categories_context(user), **(extra_context or {})}
+    if error:
+        context["error"] = error
+    return render_to_string(template_name, context, request=request)
+
+
+def render_categories_refresh_response(
+    request,
+    user,
+    *,
+    success: str | None = None,
+    error: str | None = None,
+) -> HttpResponse:
+    parts = [
+        MODAL_CLOSE_HTML,
+        inject_oob_outer_swap(
+            render_categories_content(request, user, success=success, error=error),
+            "categories-content",
+        ),
+    ]
+    return HttpResponse("".join(parts))
 
 
 @router.get("")
-def categories_section(request):
+def categories_content(request):
     user = get_authenticated_user(request)
-    return render_section_response(request, user, SECTION_TEMPLATE)
+    return HttpResponse(render_categories_content(request, user))
 
 
-@router.get("/new")
-def new_category_form(request):
+@router.get("/create")
+def create_category_modal(request):
     user = get_authenticated_user(request)
-    return render_section_response(request, user, SECTION_TEMPLATE, extra_context={"show_add_modal": True})
-
-
-@router.get("/{category_id}/confirm-delete")
-def confirm_delete_category(request, category_id: int):
-    user = get_authenticated_user(request)
-    category = get_user_category(user, category_id)
-    return render_section_response(request, user, SECTION_TEMPLATE, extra_context={"delete_confirm_category": category})
+    return HttpResponse(
+        render_categories_modal(request, user, "partials/categories/category_create_modal.html")
+    )
 
 
 @router.post("")
@@ -61,29 +87,46 @@ def create_category_ui(
     is_income: str = Form(""),
 ):
     user = get_authenticated_user(request)
-    payload, error = _validate_category_form(name, color, is_income)
+    payload, error = validate_category_form(name, color, is_income)
     if error:
-        return render_section_response(request, user, SECTION_TEMPLATE, error=error)
+        return HttpResponse(
+            render_categories_modal(
+                request,
+                user,
+                "partials/categories/category_create_modal.html",
+                error=error,
+            )
+        )
 
     Category.objects.create(user=user, **payload.model_dump())
-    return render_section_response(
-        request,
-        user,
-        SECTION_TEMPLATE,
-        success="Kategoria została dodana.",
-        refresh_summary=True,
+    return render_categories_refresh_response(request, user, success="Kategoria została dodana.")
+
+
+@router.get("/{category_id}/delete-confirm")
+def delete_category_confirm_modal(request, category_id: int):
+    user = get_authenticated_user(request)
+    category = get_user_category(user, category_id)
+    return HttpResponse(
+        render_categories_modal(
+            request,
+            user,
+            "partials/categories/category_delete_confirm_modal.html",
+            extra_context={"editing_category": category},
+        )
     )
 
 
 @router.get("/{category_id}/edit")
-def edit_category_form(request, category_id: int):
+def edit_category_modal(request, category_id: int):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
-    return render_section_response(
-        request,
-        user,
-        SECTION_TEMPLATE,
-        extra_context={"editing_category": category},
+    return HttpResponse(
+        render_categories_modal(
+            request,
+            user,
+            "partials/categories/category_form_modal.html",
+            extra_context={"editing_category": category},
+        )
     )
 
 
@@ -93,31 +136,25 @@ def update_category_ui(
     category_id: int,
     name: str = Form(...),
     color: str = Form(DEFAULT_CATEGORY_COLOR),
-    is_income: str = Form(""),
 ):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
-    payload, error = _validate_category_form(name, color, is_income)
+    payload, error = validate_category_form(name, color, "true" if category.is_income else "")
     if error:
-        return render_section_response(
-            request,
-            user,
-            SECTION_TEMPLATE,
-            error=error,
-            extra_context={"editing_category": category},
+        return HttpResponse(
+            render_categories_modal(
+                request,
+                user,
+                "partials/categories/category_form_modal.html",
+                error=error,
+                extra_context={"editing_category": category},
+            )
         )
 
-    for field, value in payload.model_dump().items():
-        setattr(category, field, value)
-    category.save()
-    return render_section_response(
-        request,
-        user,
-        SECTION_TEMPLATE,
-        success="Kategoria została zaktualizowana.",
-        refresh_summary=True,
-        refresh_sections=[TRANSACTIONS_SECTION],
-    )
+    category.name = payload.name
+    category.color = payload.color
+    category.save(update_fields=["name", "color"])
+    return render_categories_refresh_response(request, user, success="Kategoria została zaktualizowana.")
 
 
 @router.delete("/{category_id}")
@@ -125,11 +162,4 @@ def delete_category_ui(request, category_id: int):
     user = get_authenticated_user(request)
     category = get_user_category(user, category_id)
     category.delete()
-    return render_section_response(
-        request,
-        user,
-        SECTION_TEMPLATE,
-        success="Kategoria została usunięta.",
-        refresh_summary=True,
-        refresh_sections=[TRANSACTIONS_SECTION],
-    )
+    return render_categories_refresh_response(request, user, success="Kategoria została usunięta.")

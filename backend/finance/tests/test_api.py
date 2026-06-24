@@ -153,6 +153,21 @@ class TransactionAPITest(TestCase):
         txn = Transaction.objects.get(pk=data["id"])
         self.assertEqual(txn.date, custom_date)
 
+    def test_create_transaction_rejects_income_category_for_expense(self):
+        income_category = Category.objects.create(user=self.user, name="Wynagrodzenie", is_income=True)
+        response = self.client.post(
+            "/api/transactions",
+            json.dumps({
+                "account_id": self.account.pk,
+                "category_id": income_category.pk,
+                "amount": "-200.00",
+                "title": "Zakupy",
+                "description": "",
+            }),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 422)
+
     def test_delete_transaction_reverses_balance(self):
         txn = Transaction.objects.create(
             account=self.account, category=None, amount=Decimal("-300.00"), title="Wydatek"

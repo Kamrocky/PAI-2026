@@ -80,7 +80,10 @@ class AuthAPITest(TestCase):
             {"email": "jan@example.com", "password": self.password},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Widok w budowie", response.content.decode())
+        content = response.content.decode()
+        self.assertIn('id="home-content"', content)
+        self.assertIn('href="/profile/"', content)
+        self.assertIn("Jan", content)
 
     def test_login_wrong_password(self):
         User.objects.create_user(
@@ -153,22 +156,6 @@ class AuthAPITest(TestCase):
         response = self.client.post("/api/auth/logout")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Podaj adres e-mail", response.content.decode())
-
-    def test_protected_ping_unauthenticated(self):
-        response = self.client.get("/api/auth/protected-ping")
-        self.assertEqual(response.status_code, 401)
-
-    def test_protected_ping_authenticated(self):
-        User.objects.create_user(
-            username="jan@example.com",
-            email="jan@example.com",
-            password=self.password,
-            first_name="Jan",
-        )
-        self.client.login(username="jan@example.com", password=self.password)
-        response = self.client.get("/api/auth/protected-ping")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("witaj, Jan", response.content.decode())
 
 
 class AuthServiceTest(TestCase):

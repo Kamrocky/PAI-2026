@@ -5,6 +5,7 @@ from .api_accounts import get_user_account
 from .auth_utils import get_authenticated_user
 from .models import Transaction
 from .schemas import TransactionIn, TransactionOut, TransactionUpdate
+from .transaction_forms import validate_category_amount_type
 from .transaction_service import (
     create_transaction,
     delete_transaction,
@@ -46,6 +47,9 @@ def create_transaction_endpoint(request, payload: TransactionIn):
     account = get_user_account(user, payload.account_id)
     category = resolve_category(user, payload.category_id)
     data = payload.model_dump()
+    category_error = validate_category_amount_type(category, data["amount"])
+    if category_error:
+        raise HttpError(422, category_error)
     return create_transaction(
         account=account,
         category=category,
@@ -69,6 +73,9 @@ def update_transaction_endpoint(request, transaction_id: int, payload: Transacti
     account = get_user_account(user, payload.account_id)
     category = resolve_category(user, payload.category_id)
     data = payload.model_dump()
+    category_error = validate_category_amount_type(category, data["amount"])
+    if category_error:
+        raise HttpError(422, category_error)
     return update_transaction(
         txn,
         account=account,
@@ -100,11 +107,16 @@ def partial_update_transaction(
     if "category_id" in updates:
         category = resolve_category(user, updates["category_id"])
 
+    amount = updates.get("amount", txn.amount)
+    category_error = validate_category_amount_type(category, amount)
+    if category_error:
+        raise HttpError(422, category_error)
+
     return update_transaction(
         txn,
         account=account,
         category=category,
-        amount=updates.get("amount", txn.amount),
+        amount=amount,
         title=updates.get("title", txn.title),
         description=updates.get("description", txn.description),
         date=updates.get("date"),

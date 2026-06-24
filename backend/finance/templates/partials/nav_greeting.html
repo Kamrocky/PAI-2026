@@ -1,1 +1,6 @@
-<span id="nav-user-greeting" class="hidden sm:inline"><a href="{% url 'profile' %}" class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-zinc-100 transition-colors hover:bg-white/10">{{ display_name }}</a></span>
+<span id="nav-user-greeting" class="hidden sm:inline-flex">
+  <a
+    href="{% url 'profile' %}"
+    class="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium leading-none text-zinc-100 transition-colors hover:bg-white/10"
+  >{{ display_name }}</a>
+</span>

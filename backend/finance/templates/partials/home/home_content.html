@@ -1,0 +1,6 @@
+<div id="home-content" class="space-y-2">
+  {% include "partials/home/account_panel.html" %}
+  {% if active_account %}
+    {% include "partials/home/home_transactions.html" %}
+  {% endif %}
+</div>

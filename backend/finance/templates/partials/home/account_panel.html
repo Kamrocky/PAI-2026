@@ -1,0 +1,14 @@
+<div class="space-y-3">
+  <section
+    class="flex min-h-[17.5rem] flex-col rounded-xl border border-white/10 bg-zinc-950/30 p-5"
+    aria-label="Panel konta"
+  >
+    {% if is_create_slot %}
+      {% include "partials/home/account_create_slot.html" %}
+    {% else %}
+      {% include "partials/home/account_summary.html" %}
+    {% endif %}
+  </section>
+
+  {% include "partials/home/account_carousel_dots.html" %}
+</div>

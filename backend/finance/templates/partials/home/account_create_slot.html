@@ -1,0 +1,13 @@
+<div class="flex flex-1 items-center justify-center" aria-label="Dodaj nowe konto">
+  <button
+    type="button"
+    hx-get="/api/ui/home/accounts/create"
+    hx-target="#home-modal"
+    hx-swap="innerHTML"
+    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/5 px-10 py-8 text-zinc-300 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10 hover:text-emerald-200"
+    aria-label="Dodaj nowe konto"
+  >
+    <span class="text-3xl leading-none">+</span>
+    <span class="mt-2 text-sm font-medium">Nowe konto</span>
+  </button>
+</div>

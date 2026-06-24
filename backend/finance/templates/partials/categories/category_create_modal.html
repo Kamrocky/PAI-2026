@@ -1,0 +1,45 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="category-create-title"
+>
+  <div
+    data-home-modal-card
+    class="w-full max-w-lg rounded-xl border border-white/10 bg-zinc-900/95 p-6 shadow-xl"
+  >
+    <h2 id="category-create-title" class="text-lg font-semibold text-zinc-50">Nowa kategoria</h2>
+    <p class="mt-1 text-sm text-zinc-400">Typu kategorii nie da się zmienić po utworzeniu.</p>
+
+    {% if error %}
+      <p class="mt-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{{ error }}</p>
+    {% endif %}
+
+    <form
+      hx-post="/api/ui/categories"
+      hx-target="#categories-content"
+      hx-swap="none"
+      class="mt-5 space-y-4 text-sm"
+    >
+      {% csrf_token %}
+      {% include "partials/categories/category_form_fields.html" with show_type_toggle=True %}
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button
+          type="submit"
+          class="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400"
+        >
+          Utwórz kategorię
+        </button>
+        <button
+          type="button"
+          hx-get="/api/ui/home/modal/close"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+          class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-zinc-200 hover:bg-white/10"
+        >
+          Anuluj
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<div class="space-y-4 text-sm">
+  <label class="block">
+    <span class="mb-1 block text-xs font-medium text-zinc-300">Nazwa</span>
+    <input
+      type="text"
+      name="name"
+      value="{% if category %}{{ category.name }}{% endif %}"
+      required
+      autofocus
+      class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+    />
+  </label>
+
+  {% if show_type_toggle %}
+  <label class="group flex cursor-pointer items-center gap-3">
+    <input type="checkbox" name="is_income" {% if category and category.is_income %}checked{% endif %} class="sr-only" />
+    <span class="relative flex h-5 w-9 shrink-0 items-center rounded-full border border-zinc-600 bg-zinc-700 transition-colors group-has-[:checked]:border-emerald-500 group-has-[:checked]:bg-emerald-600">
+      <span class="absolute left-0.5 h-4 w-4 rounded-full bg-zinc-400 transition-all group-has-[:checked]:left-[18px] group-has-[:checked]:bg-white"></span>
+    </span>
+    <span class="text-sm text-zinc-300">Przychód</span>
+  </label>
+  {% elif category %}
+  <p class="text-sm text-zinc-400">
+    Typ:
+    <span class="font-medium text-zinc-200">{% if category.is_income %}Przychód{% else %}Wydatek{% endif %}</span>
+    <span class="text-zinc-500">(nie można zmienić)</span>
+  </p>
+  {% endif %}
+
+  <div>
+    <span class="mb-1 block text-xs font-medium text-zinc-300">Kolor</span>
+    <div class="flex flex-wrap gap-2">
+      {% for c in category_color_palette %}
+      <label class="cursor-pointer">
+        <input
+          type="radio"
+          name="color"
+          value="{{ c }}"
+          class="peer sr-only"
+          {% if category %}{% if category.color == c %}checked{% endif %}{% else %}{% if forloop.first %}checked{% endif %}{% endif %}
+        />
+        <span
+          class="block h-7 w-7 rounded-full border-2 border-transparent transition-all peer-checked:scale-110 peer-checked:border-white"
+          style="background-color: {{ c }}"
+        ></span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+</div>
