@@ -8,7 +8,6 @@ from .api_transactions import get_user_transaction
 from .auth_utils import get_authenticated_user
 from .home_service import (
     HOME_ACCOUNT_SESSION_KEY,
-    get_active_account,
     get_home_context,
     go_to_carousel_slot,
     navigate_home_slot,
@@ -73,10 +72,6 @@ def render_home_transactions(
     )
 
 
-def render_home_content_response(request, user) -> HttpResponse:
-    return HttpResponse(render_home_content(request, user))
-
-
 def _get_active_account_or_404(request, user) -> Account | HttpResponse:
     account = resolve_active_account(request, user)
     if account is None:
@@ -109,17 +104,6 @@ def navigate_account(request, direction: str = Form(...)):
 def select_slot(request, slot_index: int = Form(...)):
     user = get_authenticated_user(request)
     go_to_carousel_slot(request, user, slot_index)
-    return HttpResponse(render_home_content(request, user))
-
-
-@router.post("/select-account")
-def select_account(request, account_id: int = Form(...)):
-    user = get_authenticated_user(request)
-    account = get_active_account(user, account_id)
-    if account is None:
-        return HttpResponse("Konto nie istnieje.", status=404)
-
-    set_active_account_id(request, account_id)
     return HttpResponse(render_home_content(request, user))
 
 
