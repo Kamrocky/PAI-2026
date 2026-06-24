@@ -1,0 +1,23 @@
+<div class="space-y-4">
+  <div>
+    <label class="mb-1 block text-sm text-zinc-400">Nazwa</label>
+    <input type="text" name="name"
+           value="{% if category %}{{ category.name }}{% endif %}"
+           required autofocus
+           class="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none">
+  </div>
+  <div>
+    <label class="mb-1 block text-sm text-zinc-400">Kolor</label>
+    <div class="flex flex-wrap">
+      {% for c in category_color_palette %}
+      <label class="cursor-pointer">
+        <input type="radio" name="color" value="{{ c }}"
+               class="peer sr-only"
+               {% if category %}{% if category.color == c %}checked{% endif %}{% else %}{% if forloop.first %}checked{% endif %}{% endif %}>
+        <span class="block h-7 w-7 rounded-full border-2 border-transparent peer-checked:border-white peer-checked:scale-110 transition-all"
+              style="background-color: {{ c }}"></span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+</div>

@@ -40,6 +40,19 @@ def categories_section(request):
     return render_section_response(request, user, SECTION_TEMPLATE)
 
 
+@router.get("/new")
+def new_category_form(request):
+    user = get_authenticated_user(request)
+    return render_section_response(request, user, SECTION_TEMPLATE, extra_context={"show_add_modal": True})
+
+
+@router.get("/{category_id}/confirm-delete")
+def confirm_delete_category(request, category_id: int):
+    user = get_authenticated_user(request)
+    category = get_user_category(user, category_id)
+    return render_section_response(request, user, SECTION_TEMPLATE, extra_context={"delete_confirm_category": category})
+
+
 @router.post("")
 def create_category_ui(
     request,
