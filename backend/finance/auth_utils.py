@@ -5,6 +5,9 @@ from django.template.loader import render_to_string
 from ninja.errors import HttpError
 
 
+from .home_service import get_home_context
+
+
 def get_display_name(user) -> str:
     first_name = (getattr(user, "first_name", "") or "").strip()
     if first_name:
@@ -55,7 +58,7 @@ def render_auth_step(
 def render_auth_success(request, user) -> HttpResponse:
     content_html = render_to_string(
         "partials/home_panel.html",
-        {"active_tab": "home"},
+        get_home_context(user, request),
         request=request,
     )
     user_info_html = render_user_info(request, logged_in=True)

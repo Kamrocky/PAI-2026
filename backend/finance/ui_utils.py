@@ -45,12 +45,16 @@ def get_ui_context(user: AbstractBaseUser) -> dict:
     }
 
 
-def _inject_oob_swap(html: str, element_id: str) -> str:
+def inject_oob_outer_swap(html: str, element_id: str) -> str:
     needle = f'id="{element_id}"'
     replacement = f'id="{element_id}" hx-swap-oob="outerHTML"'
     if needle not in html:
         return html
     return html.replace(needle, replacement, 1)
+
+
+def _inject_oob_swap(html: str, element_id: str) -> str:
+    return inject_oob_outer_swap(html, element_id)
 
 
 def render_dashboard_summary(

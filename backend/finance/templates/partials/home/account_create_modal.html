@@ -1,0 +1,69 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 p-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="account-create-title"
+>
+  <div
+    data-home-modal-card
+    class="w-full max-w-md rounded-xl border border-white/10 bg-zinc-900/95 p-6 shadow-xl"
+  >
+    <h2 id="account-create-title" class="text-lg font-semibold text-zinc-50">Nowe konto</h2>
+    <p class="mt-1 text-sm text-zinc-400">Waluty nie da się zmienić po utworzeniu konta.</p>
+
+    {% if error %}
+      <p class="mt-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{{ error }}</p>
+    {% endif %}
+
+    <form
+      hx-post="/api/ui/home/accounts"
+      hx-target="#home-content"
+      hx-swap="none"
+      class="mt-5 space-y-4 text-sm"
+    >
+      {% csrf_token %}
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Nazwa konta</span>
+        <input
+          type="text"
+          name="name"
+          placeholder="np. Główne"
+          required
+          autofocus
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+      </label>
+      <div>
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Waluta</span>
+        {% include "partials/home/currency_select.html" with default_currency="PLN" default_currency_label="Polski złoty" %}
+      </div>
+      <label class="block">
+        <span class="mb-1 block text-xs font-medium text-zinc-300">Saldo początkowe</span>
+        <input
+          type="text"
+          name="balance"
+          value="0.00"
+          inputmode="decimal"
+          class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 font-mono text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+        />
+      </label>
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button
+          type="submit"
+          class="rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400"
+        >
+          Utwórz konto
+        </button>
+        <button
+          type="button"
+          hx-get="/api/ui/home/modal/close"
+          hx-target="#home-modal"
+          hx-swap="innerHTML"
+          class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-zinc-200 hover:bg-white/10"
+        >
+          Anuluj
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

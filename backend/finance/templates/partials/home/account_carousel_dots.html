@@ -1,0 +1,65 @@
+<div class="flex justify-center gap-1 pt-1" role="tablist" aria-label="Wybór konta">
+  {% if accounts %}
+    {% for account in accounts %}
+      <form
+        hx-post="/api/ui/home/select-slot"
+        hx-target="#home-content"
+        hx-swap="outerHTML"
+        class="inline-flex"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="slot_index" value="{{ forloop.counter0 }}" />
+        <button
+          type="submit"
+          role="tab"
+          aria-selected="{% if not is_create_slot and active_account and active_account.id == account.id %}true{% else %}false{% endif %}"
+          aria-label="Konto {{ account.name }}"
+          class="rounded-full p-2 transition-opacity hover:opacity-100 {% if not is_create_slot and active_account and active_account.id == account.id %}opacity-100{% else %}opacity-60{% endif %}"
+        >
+          <span
+            class="block h-1.5 w-1.5 rounded-full {% if not is_create_slot and active_account and active_account.id == account.id %}bg-emerald-400{% else %}bg-zinc-500 hover:bg-zinc-300{% endif %}"
+          ></span>
+        </button>
+      </form>
+    {% endfor %}
+    <form
+      hx-post="/api/ui/home/select-slot"
+      hx-target="#home-content"
+      hx-swap="outerHTML"
+      class="inline-flex"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="slot_index" value="{{ accounts|length }}" />
+      <button
+        type="submit"
+        role="tab"
+        aria-selected="{% if is_create_slot %}true{% else %}false{% endif %}"
+        aria-label="Nowe konto"
+        class="rounded-full p-2 transition-opacity hover:opacity-100 {% if is_create_slot %}opacity-100{% else %}opacity-60{% endif %}"
+      >
+        <span
+          class="block h-1.5 w-1.5 rounded-full {% if is_create_slot %}bg-emerald-400{% else %}bg-zinc-500 hover:bg-zinc-300{% endif %}"
+        ></span>
+      </button>
+    </form>
+  {% else %}
+    <form
+      hx-post="/api/ui/home/select-slot"
+      hx-target="#home-content"
+      hx-swap="outerHTML"
+      class="inline-flex"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="slot_index" value="0" />
+      <button
+        type="submit"
+        role="tab"
+        aria-selected="true"
+        aria-label="Nowe konto"
+        class="rounded-full p-2 opacity-100"
+      >
+        <span class="block h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+      </button>
+    </form>
+  {% endif %}
+</div>

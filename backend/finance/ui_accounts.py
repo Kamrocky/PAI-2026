@@ -1,44 +1,14 @@
-from decimal import Decimal, InvalidOperation
-
-from pydantic import ValidationError as PydanticValidationError
 from ninja import Form, Router
 
+from .account_forms import validate_account_create, validate_account_edit
 from .api_accounts import get_user_account
 from .auth_utils import get_authenticated_user
 from .models import Account
-from .schemas import AccountIn, AccountUpdate
 from .ui_utils import TRANSACTIONS_SECTION, render_section_response
 
 router = Router(tags=["accounts-ui"])
 
 SECTION_TEMPLATE = "partials/accounts_section.html"
-
-
-def _validate_account_create(
-    name: str,
-    currency: str,
-    balance: str,
-) -> tuple[AccountIn | None, str | None]:
-    try:
-        balance_decimal = Decimal(balance or "0.00")
-    except InvalidOperation:
-        return None, "Nieprawidłowe saldo początkowe."
-
-    try:
-        payload = AccountIn(name=name, currency=currency, balance=balance_decimal)
-    except PydanticValidationError as exc:
-        messages = [err["msg"] for err in exc.errors()]
-        return None, "; ".join(messages)
-    return payload, None
-
-
-def _validate_account_edit(name: str) -> tuple[AccountUpdate | None, str | None]:
-    try:
-        payload = AccountUpdate(name=name)
-    except PydanticValidationError as exc:
-        messages = [err["msg"] for err in exc.errors()]
-        return None, "; ".join(messages)
-    return payload, None
 
 
 @router.get("")
@@ -55,7 +25,7 @@ def create_account_ui(
     balance: str = Form("0.00"),
 ):
     user = get_authenticated_user(request)
-    payload, error = _validate_account_create(name, currency, balance)
+    payload, error = validate_account_create(name, currency, balance)
     if error:
         return render_section_response(request, user, SECTION_TEMPLATE, error=error)
 
@@ -90,7 +60,7 @@ def update_account_ui(
 ):
     user = get_authenticated_user(request)
     account = get_user_account(user, account_id)
-    payload, error = _validate_account_edit(name)
+    payload, error = validate_account_edit(name)
     if error:
         return render_section_response(
             request,
