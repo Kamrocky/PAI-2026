@@ -36,6 +36,15 @@ class ProfileUITest(TestCase):
         self.assertNotIn("/api/ui/profile/email", content)
         self.assertNotIn("Zapisz e-mail", content)
 
+    def test_profile_page_renders_section_without_lazy_load(self):
+        response = self.client.get("/profile/")
+        content = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="profile-section"', content)
+        self.assertIn("jan@example.com", content)
+        self.assertNotIn('hx-get="/api/ui/profile"', content)
+
     def test_clear_data_removes_accounts_transactions_and_categories(self):
         self._seed_finance_data()
         self.assertEqual(Account.objects.filter(user=self.user).count(), 1)

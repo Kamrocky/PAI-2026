@@ -184,4 +184,17 @@
       });
     }
   });
+
+  function initStatsChartsOnLoad() {
+    if (!document.getElementById("stats-data")) return;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(renderStatsCharts);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initStatsChartsOnLoad);
+  } else {
+    initStatsChartsOnLoad();
+  }
 </script>

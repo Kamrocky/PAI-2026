@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block title %}CoinZen{% endblock %}
+
+{% block nav_right %}
+  <div id="user-info" class="flex items-center gap-4 text-sm text-zinc-200"></div>
+{% endblock %}
+
 {% block content %}
   <div id="page-content">
     {% include "partials/auth_forms.html" %}

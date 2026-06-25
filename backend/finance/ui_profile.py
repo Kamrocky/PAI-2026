@@ -4,9 +4,9 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from ninja import Form, Router
 
-from .auth_utils import get_authenticated_user, get_display_name, render_logout_success
+from .auth_utils import get_authenticated_user, render_logout_success
 from .profile_forms import validate_profile_name, validate_profile_password
-from .profile_service import clear_user_finance_data, delete_user_account
+from .profile_service import clear_user_finance_data, delete_user_account, get_profile_context
 from .ui_utils import prepend_modal_close, prepend_modal_close_to_response
 
 router = Router(tags=["profile-ui"])
@@ -15,17 +15,8 @@ SECTION_TEMPLATE = "partials/profile_section.html"
 NAV_GREETING_TEMPLATE = "partials/nav_greeting.html"
 
 
-def _profile_context(user, *, error: str | None = None, success: str | None = None) -> dict:
-    context = {"user": user, "display_name": get_display_name(user)}
-    if error:
-        context["error"] = error
-    if success:
-        context["success"] = success
-    return context
-
-
 def _render_profile_section(request, user, *, error=None, success=None, refresh_nav=False):
-    context = _profile_context(user, error=error, success=success)
+    context = get_profile_context(user, error=error, success=success)
     section_html = render_to_string(SECTION_TEMPLATE, context, request=request)
     if refresh_nav:
         nav_html = render_to_string(NAV_GREETING_TEMPLATE, context, request=request)
