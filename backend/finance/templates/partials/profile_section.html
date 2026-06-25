@@ -39,27 +39,20 @@
       <form hx-post="/api/ui/profile/password" hx-target="#profile-section" hx-swap="outerHTML">
         {% csrf_token %}
         <div class="space-y-3">
-          <input
-            type="password"
-            name="current_password"
-            placeholder="Aktualne hasło"
-            required
-            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
-          />
-          <input
-            type="password"
-            name="new_password"
-            placeholder="Nowe hasło (min. 8 znaków)"
-            required
-            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
-          />
-          <input
-            type="password"
-            name="confirm_password"
-            placeholder="Powtórz nowe hasło"
-            required
-            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
-          />
+          {% with pw_class="w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2 pl-3 pr-10 text-zinc-100 focus:border-zinc-500 focus:outline-none" %}
+          <div class="relative password-wrapper">
+            <input type="password" name="current_password" placeholder="Aktualne hasło" required class="{{ pw_class }}" />
+            {% include "partials/ui/password_toggle_btn.html" %}
+          </div>
+          <div class="relative password-wrapper">
+            <input type="password" name="new_password" placeholder="Nowe hasło (min. 8 znaków)" required class="{{ pw_class }}" />
+            {% include "partials/ui/password_toggle_btn.html" %}
+          </div>
+          <div class="relative password-wrapper">
+            <input type="password" name="confirm_password" placeholder="Powtórz nowe hasło" required class="{{ pw_class }}" />
+            {% include "partials/ui/password_toggle_btn.html" %}
+          </div>
+          {% endwith %}
           <button
             type="submit"
             class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"

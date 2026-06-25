@@ -99,19 +99,69 @@ class UIViewSmokeTest(TestCase):
         self.assertIn('id="categories-content"', content)
         self.assertIn("Wydatki", content)
         self.assertIn("Wpływy", content)
-        self.assertIn("Nowa kategoria", content)
+        self.assertIn("Dodaj kategorię", content)
         self.assertNotIn("Zarządzanie", content)
 
-    def test_authenticated_stats_renders_placeholder(self):
+    def test_authenticated_stats_lazy_loads_charts(self):
         self.client.login(username="jan@example.com", password=self.password)
         response = self.client.get("/stats/")
         content = response.content.decode()
         self.assertEqual(response.status_code, 200)
         self.assertIn("Statystyki", content)
-        self.assertIn("Widok w budowie", content)
+        self.assertIn('hx-get="/api/ui/stats"', content)
+        self.assertNotIn("Widok w budowie", content)
 
     def test_auth_email_step_renders_in_shell(self):
         response = self.client.get("/api/auth")
         content = response.content.decode()
         self.assertEqual(response.status_code, 200)
         self.assertIn("Podaj adres e-mail", content)
+
+
+class StatsUITest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.password = "Silne!Haslo1"
+        self.user = User.objects.create_user(
+            username="ula@example.com",
+            email="ula@example.com",
+            password=self.password,
+            first_name="Ula",
+        )
+        self.client.login(username="ula@example.com", password=self.password)
+
+    def test_stats_empty_state_without_accounts(self):
+        response = self.client.get("/api/ui/stats")
+        content = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Brak kont do analizy", content)
+        self.assertNotIn('id="stats-data"', content)
+
+    def test_stats_renders_chart_data_with_account(self):
+        from finance.transaction_service import create_transaction
+
+        account = Account.objects.create(
+            user=self.user, name="Konto", balance="0.00", currency="PLN"
+        )
+        create_transaction(
+            account=account, category=None, amount="1000.00",
+            title="Wpływ", description="",
+        )
+        create_transaction(
+            account=account, category=None, amount="-250.00",
+            title="Wydatek", description="",
+        )
+
+        response = self.client.get("/api/ui/stats")
+        content = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="stats-data"', content)
+        self.assertIn('id="chart-income-expense"', content)
+        self.assertIn('id="chart-balance"', content)
+        self.assertIn("Konto", content)
+
+    def test_stats_period_switch_returns_content(self):
+        Account.objects.create(user=self.user, name="Konto", balance="0.00", currency="PLN")
+        response = self.client.post("/api/ui/stats/period", {"period": "365"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="stats-content"', response.content.decode())
