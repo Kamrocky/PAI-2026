@@ -8,9 +8,5 @@
 {% endblock %}
 
 {% block page_content %}
-  <div hx-get="/api/ui/stats" hx-trigger="load" hx-swap="outerHTML">
-    <div class="flex items-center justify-center py-16 text-sm text-zinc-500">
-      Ładowanie statystyk…
-    </div>
-  </div>
+  {% include "partials/stats/stats_content.html" %}
 {% endblock %}

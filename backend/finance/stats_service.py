@@ -1,7 +1,7 @@
 """Agregacja danych do strony Statystyki (wykresy ApexCharts).
 
 Wszystko liczone PER KONTO (jedna waluta), więc nie mieszamy walut.
-Wykorzystuje pomocnicze funkcje z home_service tam, gdzie to możliwe.
+Wykorzystuje współdzielone helpery agregacji i home_service tam, gdzie to możliwe.
 """
 from collections import defaultdict
 from dataclasses import dataclass
@@ -13,8 +13,9 @@ from django.db.models import Sum
 from django.http import HttpRequest
 from django.utils import timezone
 
+from .aggregation_utils import sum_income_and_expenses
 from .constants import CATEGORY_COLOR_PALETTE
-from .home_service import _sum_income_and_expenses, get_user_accounts
+from .queries import get_user_accounts
 from .models import Account, Transaction
 
 STATS_ACCOUNT_SESSION_KEY = "stats_account_id"
@@ -206,7 +207,7 @@ def _monthly_trend(account: Account, now: datetime, months: int = MONTHLY_TREND_
         else:
             end = datetime(y, m + 1, 1, tzinfo=now.tzinfo)
         txns = Transaction.objects.filter(account=account, date__gte=start, date__lt=end)
-        income, expenses = _sum_income_and_expenses(txns)
+        income, expenses = sum_income_and_expenses(txns)
         labels.append(POLISH_MONTHS_SHORT[m - 1])
         income_series.append(round(float(income), 2))
         expense_series.append(round(float(expenses), 2))
@@ -229,8 +230,8 @@ def _year_over_year(account: Account, now: datetime) -> dict:
     cur_txns = Transaction.objects.filter(account=account, date__gte=cur_start, date__lt=cur_end)
     prev_txns = Transaction.objects.filter(account=account, date__gte=prev_start, date__lt=prev_end)
 
-    cur_income, cur_expenses = _sum_income_and_expenses(cur_txns)
-    prev_income, prev_expenses = _sum_income_and_expenses(prev_txns)
+    cur_income, cur_expenses = sum_income_and_expenses(cur_txns)
+    prev_income, prev_expenses = sum_income_and_expenses(prev_txns)
 
     month_label = POLISH_MONTHS_SHORT[now.month - 1]
     return {
@@ -244,7 +245,7 @@ def build_chart_data(account: Account, period: str) -> dict:
     now = timezone.now()
     since = _period_start(period, now)
     period_txns = Transaction.objects.filter(account=account, date__gte=since, date__lte=now)
-    income, expenses = _sum_income_and_expenses(period_txns)
+    income, expenses = sum_income_and_expenses(period_txns)
 
     return {
         "currency": account.currency,

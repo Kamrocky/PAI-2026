@@ -102,13 +102,15 @@ class UIViewSmokeTest(TestCase):
         self.assertIn("Dodaj kategorię", content)
         self.assertNotIn("Zarządzanie", content)
 
-    def test_authenticated_stats_lazy_loads_charts(self):
+    def test_authenticated_stats_renders_content(self):
         self.client.login(username="jan@example.com", password=self.password)
         response = self.client.get("/stats/")
         content = response.content.decode()
         self.assertEqual(response.status_code, 200)
         self.assertIn("Statystyki", content)
-        self.assertIn('hx-get="/api/ui/stats"', content)
+        self.assertIn('id="stats-content"', content)
+        self.assertIn("Brak kont do analizy", content)
+        self.assertNotIn('hx-get="/api/ui/stats"', content)
         self.assertNotIn("Widok w budowie", content)
 
     def test_auth_email_step_renders_in_shell(self):

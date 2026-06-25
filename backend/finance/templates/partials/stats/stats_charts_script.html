@@ -1,6 +1,6 @@
 <script>
-  // Globalny rejestr instancji wykresów — niszczymy je przed ponownym rysowaniem.
   window.__statsCharts = window.__statsCharts || [];
+  let statsChartsAnimate = false;
 
   function destroyStatsCharts() {
     window.__statsCharts.forEach((c) => {
@@ -9,13 +9,24 @@
     window.__statsCharts = [];
   }
 
+  function setChartSlotsLoading(loading) {
+    document.querySelectorAll(".stats-chart-slot").forEach((slot) => {
+      slot.classList.toggle("animate-pulse", loading);
+      slot.classList.toggle("bg-white/[0.03]", loading);
+    });
+  }
+
   function statsBaseOptions() {
     return {
       chart: {
         fontFamily: "inherit",
-        foreColor: "#a1a1aa", // zinc-400
+        foreColor: "#a1a1aa",
         toolbar: { show: false },
-        animations: { enabled: true, easing: "easeinout", speed: 600 },
+        animations: {
+          enabled: statsChartsAnimate,
+          easing: "easeinout",
+          speed: statsChartsAnimate ? 250 : 0,
+        },
         background: "transparent",
       },
       grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 4 },
@@ -29,11 +40,18 @@
     return new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 }).format(value) + " " + currency;
   }
 
+  function mountChart(el, opts) {
+    const chart = new ApexCharts(el, opts);
+    window.__statsCharts.push(chart);
+    return chart.render();
+  }
+
   function renderDonut(elId, series, labels, colors, currency, centerLabel) {
     const el = document.querySelector(elId);
-    if (!el) return;
-    const opts = Object.assign(statsBaseOptions(), {
-      chart: Object.assign(statsBaseOptions().chart, { type: "donut", height: 260 }),
+    if (!el) return Promise.resolve();
+    const base = statsBaseOptions();
+    return mountChart(el, Object.assign(base, {
+      chart: Object.assign({}, base.chart, { type: "donut", height: 260 }),
       series: series,
       labels: labels,
       colors: colors,
@@ -67,17 +85,15 @@
       },
       tooltip: { theme: "dark", y: { formatter: function (v) { return fmt(v, currency); } } },
       noData: { text: "Brak danych", style: { color: "#71717a" } },
-    });
-    const chart = new ApexCharts(el, opts);
-    chart.render();
-    window.__statsCharts.push(chart);
+    }));
   }
 
   function renderArea(elId, data, currency) {
     const el = document.querySelector(elId);
-    if (!el) return;
-    const opts = Object.assign(statsBaseOptions(), {
-      chart: Object.assign(statsBaseOptions().chart, { type: "area", height: 260 }),
+    if (!el) return Promise.resolve();
+    const base = statsBaseOptions();
+    return mountChart(el, Object.assign(base, {
+      chart: Object.assign({}, base.chart, { type: "area", height: 260 }),
       series: [{ name: "Saldo", data: data.values }],
       colors: ["#4DB6A0"],
       xaxis: {
@@ -95,17 +111,15 @@
       },
       tooltip: { theme: "dark", x: { format: "dd MMM yyyy" }, y: { formatter: function (v) { return fmt(v, currency); } } },
       noData: { text: "Brak danych", style: { color: "#71717a" } },
-    });
-    const chart = new ApexCharts(el, opts);
-    chart.render();
-    window.__statsCharts.push(chart);
+    }));
   }
 
   function renderGroupedBars(elId, payload, currency) {
     const el = document.querySelector(elId);
-    if (!el) return;
-    const opts = Object.assign(statsBaseOptions(), {
-      chart: Object.assign(statsBaseOptions().chart, { type: "bar", height: 280 }),
+    if (!el) return Promise.resolve();
+    const base = statsBaseOptions();
+    return mountChart(el, Object.assign(base, {
+      chart: Object.assign({}, base.chart, { type: "bar", height: 280 }),
       series: [
         { name: "Wpływy", data: payload.income },
         { name: "Wydatki", data: payload.expenses },
@@ -122,66 +136,81 @@
       legend: { position: "top", horizontalAlign: "right", labels: { colors: "#d4d4d8" } },
       tooltip: { theme: "dark", y: { formatter: function (v) { return fmt(v, currency); } } },
       noData: { text: "Brak danych", style: { color: "#71717a" } },
-    });
-    const chart = new ApexCharts(el, opts);
-    chart.render();
-    window.__statsCharts.push(chart);
+    }));
   }
 
-  function renderStatsCharts() {
+  async function renderStatsCharts(showSkeleton) {
     const dataEl = document.getElementById("stats-data");
-    if (!dataEl) return;
-    if (typeof ApexCharts === "undefined") return;
+    if (!dataEl || typeof ApexCharts === "undefined") return;
 
     destroyStatsCharts();
+    if (showSkeleton) {
+      setChartSlotsLoading(true);
+    } else {
+      setChartSlotsLoading(false);
+    }
+
     const d = JSON.parse(dataEl.textContent);
 
-    renderDonut(
-      "#chart-income-expense",
-      [d.incomeVsExpense.income, d.incomeVsExpense.expenses],
-      ["Wpływy", "Wydatki"],
-      [d.incomeVsExpense.incomeColor, d.incomeVsExpense.expenseColor],
-      d.currency,
-      "Bilans"
-    );
+    await Promise.all([
+      renderDonut(
+        "#chart-income-expense",
+        [d.incomeVsExpense.income, d.incomeVsExpense.expenses],
+        ["Wpływy", "Wydatki"],
+        [d.incomeVsExpense.incomeColor, d.incomeVsExpense.expenseColor],
+        d.currency,
+        "Bilans"
+      ),
+      renderDonut(
+        "#chart-expense-categories",
+        d.expenseByCategory.map((c) => c.value),
+        d.expenseByCategory.map((c) => c.name),
+        d.expenseByCategory.map((c) => c.color),
+        d.currency,
+        "Wydatki"
+      ),
+      renderDonut(
+        "#chart-income-categories",
+        d.incomeByCategory.map((c) => c.value),
+        d.incomeByCategory.map((c) => c.name),
+        d.incomeByCategory.map((c) => c.color),
+        d.currency,
+        "Wpływy"
+      ),
+      renderArea("#chart-balance", d.balanceOverTime, d.currency),
+      renderGroupedBars("#chart-monthly", d.monthlyTrend, d.currency),
+      renderGroupedBars("#chart-yoy", d.yearOverYear, d.currency),
+    ]);
 
-    renderDonut(
-      "#chart-expense-categories",
-      d.expenseByCategory.map((c) => c.value),
-      d.expenseByCategory.map((c) => c.name),
-      d.expenseByCategory.map((c) => c.color),
-      d.currency,
-      "Wydatki"
-    );
-
-    renderDonut(
-      "#chart-income-categories",
-      d.incomeByCategory.map((c) => c.value),
-      d.incomeByCategory.map((c) => c.name),
-      d.incomeByCategory.map((c) => c.color),
-      d.currency,
-      "Wpływy"
-    );
-
-    renderArea("#chart-balance", d.balanceOverTime, d.currency);
-    renderGroupedBars("#chart-monthly", d.monthlyTrend, d.currency);
-    renderGroupedBars("#chart-yoy", d.yearOverYear, d.currency);
-
-    // Po zamontowaniu wymuszamy przeliczenie szerokości — chroni przed
-    // złym rozmiarem, gdy layout nie był jeszcze gotowy przy pierwszym renderze.
-    setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 80);
+    setChartSlotsLoading(false);
   }
 
-  // Po każdym swapie HTMX, jeśli w treści są dane statystyk — przerysuj.
-  // Słuchamy na document (skrypt jest w <head>, gdzie document.body jeszcze nie istnieje;
-  // zdarzenia HTMX i tak bąbelkują do document).
-  // requestAnimationFrame odracza render do czasu ustabilizowania layoutu,
-  // dzięki czemu ApexCharts mierzy właściwą szerokość kontenera już za pierwszym razem.
-  document.addEventListener("htmx:afterSwap", function (evt) {
+  function scheduleStatsChartsRender(animate, showSkeleton) {
+    statsChartsAnimate = animate;
+    const run = () => requestAnimationFrame(() => { renderStatsCharts(showSkeleton); });
+
+    if (!animate && window.requestIdleCallback) {
+      window.requestIdleCallback(run, { timeout: 150 });
+      return;
+    }
+
+    run();
+  }
+
+  document.addEventListener("htmx:afterSwap", function () {
     if (document.getElementById("stats-data")) {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(renderStatsCharts);
-      });
+      scheduleStatsChartsRender(true, false);
     }
   });
+
+  function initStatsChartsOnLoad() {
+    if (!document.getElementById("stats-data")) return;
+    scheduleStatsChartsRender(false, true);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initStatsChartsOnLoad);
+  } else {
+    initStatsChartsOnLoad();
+  }
 </script>
