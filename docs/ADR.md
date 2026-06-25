@@ -163,3 +163,26 @@ JWT sprawdziłoby się lepiej przy osobnym frontendzie SPA albo przy API konsumo
 
 **Konsekwencje:**  
 Sesje są przechowywane w bazie danych, co oznacza dodatkowe zapytania przy każdym żądaniu. Rozwiązanie jest też mniej przenośne — gdybyśmy w przyszłości chcieli udostępnić API dla zewnętrznych klientów, musielibyśmy dodać osobny mechanizm uwierzytelniania. Na potrzeby obecnej aplikacji webowej sesje są wystarczające i bezpieczne.
+
+---
+
+## 8. ApexCharts do wykresów na stronie statystyk
+
+**Decyzja:**  
+Wykresy na stronie statystyk renderujemy w przeglądarce biblioteką JavaScript ApexCharts, a dane do nich liczymy po stronie serwera i przekazujemy jako JSON. Nie używamy bibliotek generujących obrazy po stronie serwera, takich jak Matplotlib, ani Plotly.
+
+**Kontekst:**  
+Strona statystyk pokazuje udział wpływów i wydatków, strukturę według kategorii, saldo w czasie oraz porównania miesiąc do miesiąca i rok do roku. Wykresy mają być interaktywne i zmieniać się w locie po zmianie konta albo zakresu czasu.
+
+**Rozważane alternatywy:**
+- Matplotlib (generowanie obrazów PNG po stronie serwera)
+- Plotly (wersja serwerowa w Pythonie lub Plotly.js w przeglądarce)
+- Chart.js
+
+**Dlaczego ApexCharts:**  
+ApexCharts pasuje do architektury HTMX: dane liczymy w `stats_service.py`, oddajemy jako JSON, a wykres rysuje się i przerysowuje po stronie klienta bez przeładowania strony. Daje gotowe, ładne wykresy z animacjami i tooltipami. Dołączamy go prostym skryptem z CDN, więc nie wprowadza kroku budowania frontendu.
+
+Matplotlib generuje statyczne obrazy po stronie serwera — nie da się ich interaktywnie filtrować bez ponownego renderowania całego obrazka i odsyłania go z serwera, co jest wolniejsze i nie daje płynnej interakcji. To narzędzie bardziej do raportów i analizy w Pythonie niż do dashboardu w przeglądarce. Plotly jest interaktywne, ale cięższe i bardziej „naukowe" w wyglądzie, a jego wersja serwerowa i tak osadza w stronie dużą bibliotekę JavaScript. Chart.js byłby dobrą, lżejszą alternatywą, ale ApexCharts daje ładniejszy efekt domyślny przy podobnym nakładzie pracy.
+
+**Konsekwencje:**  
+Renderowanie wykresów dzieje się po stronie klienta w JavaScript, więc ta część interfejsu wymaga skryptu inicjującego i zależy od zewnętrznej biblioteki z CDN. Logika agregacji pozostaje jednak po stronie serwera i jest testowalna niezależnie od wykresów..
