@@ -1,0 +1,26 @@
+<div class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+  <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-4">
+    <p class="text-xs font-medium text-zinc-400">Saldo konta</p>
+    <p class="mt-1 font-mono text-lg font-semibold text-zinc-100">
+      {{ chart_data.balance }} {{ chart_data.currency }}
+    </p>
+  </div>
+  <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-4">
+    <p class="text-xs font-medium text-zinc-400">Wpływy (okres)</p>
+    <p class="mt-1 font-mono text-lg font-semibold text-emerald-300">
+      +{{ chart_data.income }} {{ chart_data.currency }}
+    </p>
+  </div>
+  <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-4">
+    <p class="text-xs font-medium text-zinc-400">Wydatki (okres)</p>
+    <p class="mt-1 font-mono text-lg font-semibold text-rose-300">
+      -{{ chart_data.expenses }} {{ chart_data.currency }}
+    </p>
+  </div>
+  <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-4">
+    <p class="text-xs font-medium text-zinc-400">Bilans (okres)</p>
+    <p class="mt-1 font-mono text-lg font-semibold {% if chart_data.net >= 0 %}text-emerald-300{% else %}text-rose-300{% endif %}">
+      {% if chart_data.net >= 0 %}+{% endif %}{{ chart_data.net }} {{ chart_data.currency }}
+    </p>
+  </div>
+</div>

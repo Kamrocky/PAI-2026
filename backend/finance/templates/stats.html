@@ -2,6 +2,15 @@
 
 {% block title %}CoinZen{% endblock %}
 
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1"></script>
+  {% include "partials/stats/stats_charts_script.html" %}
+{% endblock %}
+
 {% block page_content %}
-  {% include "partials/view_placeholder.html" with page_title="Statystyki" %}
+  <div hx-get="/api/ui/stats" hx-trigger="load" hx-swap="outerHTML">
+    <div class="flex items-center justify-center py-16 text-sm text-zinc-500">
+      Ładowanie statystyk…
+    </div>
+  </div>
 {% endblock %}

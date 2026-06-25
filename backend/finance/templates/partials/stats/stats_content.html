@@ -1,0 +1,50 @@
+<section id="stats-content">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="text-xl font-semibold tracking-tight text-zinc-50">Statystyki</h2>
+  </div>
+
+  {% if not active_account %}
+    <div class="mt-6 rounded-xl border border-white/10 bg-zinc-950/30 p-10 text-center">
+      <p class="text-sm text-zinc-400">Brak kont do analizy.</p>
+      <p class="mt-1 text-xs text-zinc-500">Dodaj konto na stronie głównej, aby zobaczyć statystyki.</p>
+    </div>
+  {% else %}
+    <!-- Pasek filtrów: karuzela kont + wybór okresu -->
+    <div class="mt-4 flex flex-col gap-4 rounded-xl border border-white/10 bg-zinc-950/30 p-4 lg:flex-row lg:items-center lg:justify-between">
+      {% include "partials/stats/stats_carousel.html" %}
+      {% include "partials/stats/period_selector.html" %}
+    </div>
+
+    {% include "partials/stats/kpi_cards.html" %}
+
+    <!-- Siatka wykresów -->
+    <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Wpływy vs Wydatki</h3>
+        <div id="chart-income-expense" class="mt-2"></div>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Saldo w czasie</h3>
+        <div id="chart-balance" class="mt-2"></div>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Struktura wydatków</h3>
+        <div id="chart-expense-categories" class="mt-2"></div>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Struktura wpływów</h3>
+        <div id="chart-income-categories" class="mt-2"></div>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5 lg:col-span-2">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Ostatnie 6 miesięcy</h3>
+        <div id="chart-monthly" class="mt-2"></div>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5 lg:col-span-2">
+        <h3 class="text-xs font-medium uppercase tracking-wide text-zinc-400">Rok do roku (ten miesiąc)</h3>
+        <div id="chart-yoy" class="mt-2"></div>
+      </div>
+    </div>
+
+    {{ chart_data|json_script:"stats-data" }}
+  {% endif %}
+</section>

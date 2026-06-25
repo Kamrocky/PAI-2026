@@ -1,0 +1,187 @@
+<script>
+  // Globalny rejestr instancji wykresów — niszczymy je przed ponownym rysowaniem.
+  window.__statsCharts = window.__statsCharts || [];
+
+  function destroyStatsCharts() {
+    window.__statsCharts.forEach((c) => {
+      try { c.destroy(); } catch (e) { /* ignore */ }
+    });
+    window.__statsCharts = [];
+  }
+
+  function statsBaseOptions() {
+    return {
+      chart: {
+        fontFamily: "inherit",
+        foreColor: "#a1a1aa", // zinc-400
+        toolbar: { show: false },
+        animations: { enabled: true, easing: "easeinout", speed: 600 },
+        background: "transparent",
+      },
+      grid: { borderColor: "rgba(255,255,255,0.06)", strokeDashArray: 4 },
+      tooltip: { theme: "dark" },
+      legend: { labels: { colors: "#d4d4d8" } },
+      dataLabels: { enabled: false },
+    };
+  }
+
+  function fmt(value, currency) {
+    return new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 0 }).format(value) + " " + currency;
+  }
+
+  function renderDonut(elId, series, labels, colors, currency, centerLabel) {
+    const el = document.querySelector(elId);
+    if (!el) return;
+    const opts = Object.assign(statsBaseOptions(), {
+      chart: Object.assign(statsBaseOptions().chart, { type: "donut", height: 260 }),
+      series: series,
+      labels: labels,
+      colors: colors,
+      stroke: { width: 2, colors: ["#18181b"] },
+      legend: { position: "bottom", labels: { colors: "#d4d4d8" }, fontSize: "12px" },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: "68%",
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: centerLabel || "Razem",
+                color: "#a1a1aa",
+                fontSize: "12px",
+                formatter: function (w) {
+                  const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  return fmt(sum, currency);
+                },
+              },
+              value: {
+                color: "#fafafa",
+                fontSize: "18px",
+                fontWeight: 600,
+                formatter: function (v) { return fmt(parseFloat(v), currency); },
+              },
+            },
+          },
+        },
+      },
+      tooltip: { theme: "dark", y: { formatter: function (v) { return fmt(v, currency); } } },
+      noData: { text: "Brak danych", style: { color: "#71717a" } },
+    });
+    const chart = new ApexCharts(el, opts);
+    chart.render();
+    window.__statsCharts.push(chart);
+  }
+
+  function renderArea(elId, data, currency) {
+    const el = document.querySelector(elId);
+    if (!el) return;
+    const opts = Object.assign(statsBaseOptions(), {
+      chart: Object.assign(statsBaseOptions().chart, { type: "area", height: 260 }),
+      series: [{ name: "Saldo", data: data.values }],
+      colors: ["#4DB6A0"],
+      xaxis: {
+        categories: data.labels,
+        type: "datetime",
+        labels: { style: { colors: "#71717a" }, datetimeUTC: false },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { formatter: function (v) { return fmt(v, currency); } } },
+      stroke: { curve: "smooth", width: 3 },
+      fill: {
+        type: "gradient",
+        gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 100] },
+      },
+      tooltip: { theme: "dark", x: { format: "dd MMM yyyy" }, y: { formatter: function (v) { return fmt(v, currency); } } },
+      noData: { text: "Brak danych", style: { color: "#71717a" } },
+    });
+    const chart = new ApexCharts(el, opts);
+    chart.render();
+    window.__statsCharts.push(chart);
+  }
+
+  function renderGroupedBars(elId, payload, currency) {
+    const el = document.querySelector(elId);
+    if (!el) return;
+    const opts = Object.assign(statsBaseOptions(), {
+      chart: Object.assign(statsBaseOptions().chart, { type: "bar", height: 280 }),
+      series: [
+        { name: "Wpływy", data: payload.income },
+        { name: "Wydatki", data: payload.expenses },
+      ],
+      colors: ["#4DB6A0", "#D97B8C"],
+      plotOptions: { bar: { borderRadius: 5, columnWidth: "55%" } },
+      xaxis: {
+        categories: payload.labels,
+        labels: { style: { colors: "#71717a" } },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: { labels: { formatter: function (v) { return fmt(v, currency); } } },
+      legend: { position: "top", horizontalAlign: "right", labels: { colors: "#d4d4d8" } },
+      tooltip: { theme: "dark", y: { formatter: function (v) { return fmt(v, currency); } } },
+      noData: { text: "Brak danych", style: { color: "#71717a" } },
+    });
+    const chart = new ApexCharts(el, opts);
+    chart.render();
+    window.__statsCharts.push(chart);
+  }
+
+  function renderStatsCharts() {
+    const dataEl = document.getElementById("stats-data");
+    if (!dataEl) return;
+    if (typeof ApexCharts === "undefined") return;
+
+    destroyStatsCharts();
+    const d = JSON.parse(dataEl.textContent);
+
+    renderDonut(
+      "#chart-income-expense",
+      [d.incomeVsExpense.income, d.incomeVsExpense.expenses],
+      ["Wpływy", "Wydatki"],
+      [d.incomeVsExpense.incomeColor, d.incomeVsExpense.expenseColor],
+      d.currency,
+      "Bilans"
+    );
+
+    renderDonut(
+      "#chart-expense-categories",
+      d.expenseByCategory.map((c) => c.value),
+      d.expenseByCategory.map((c) => c.name),
+      d.expenseByCategory.map((c) => c.color),
+      d.currency,
+      "Wydatki"
+    );
+
+    renderDonut(
+      "#chart-income-categories",
+      d.incomeByCategory.map((c) => c.value),
+      d.incomeByCategory.map((c) => c.name),
+      d.incomeByCategory.map((c) => c.color),
+      d.currency,
+      "Wpływy"
+    );
+
+    renderArea("#chart-balance", d.balanceOverTime, d.currency);
+    renderGroupedBars("#chart-monthly", d.monthlyTrend, d.currency);
+    renderGroupedBars("#chart-yoy", d.yearOverYear, d.currency);
+
+    // Po zamontowaniu wymuszamy przeliczenie szerokości — chroni przed
+    // złym rozmiarem, gdy layout nie był jeszcze gotowy przy pierwszym renderze.
+    setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 80);
+  }
+
+  // Po każdym swapie HTMX, jeśli w treści są dane statystyk — przerysuj.
+  // Słuchamy na document (skrypt jest w <head>, gdzie document.body jeszcze nie istnieje;
+  // zdarzenia HTMX i tak bąbelkują do document).
+  // requestAnimationFrame odracza render do czasu ustabilizowania layoutu,
+  // dzięki czemu ApexCharts mierzy właściwą szerokość kontenera już za pierwszym razem.
+  document.addEventListener("htmx:afterSwap", function (evt) {
+    if (document.getElementById("stats-data")) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(renderStatsCharts);
+      });
+    }
+  });
+</script>
