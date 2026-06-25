@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from ninja import Form, Router
 
 from .auth_utils import get_authenticated_user, get_display_name, render_logout_success
+from .profile_forms import validate_profile_name, validate_profile_password
 from .profile_service import clear_user_finance_data, delete_user_account
 
 router = Router(tags=["profile-ui"])
@@ -46,11 +47,11 @@ def profile_section(request):
 @router.post("/name")
 def update_name(request, first_name: str = Form(...)):
     user = get_authenticated_user(request)
-    first_name = first_name.strip()
-    if not first_name:
-        return _render_profile_section(request, user, error="Imię nie może być puste.")
-    User.objects.filter(pk=user.pk).update(first_name=first_name)
-    user.first_name = first_name
+    payload, error = validate_profile_name(first_name)
+    if error:
+        return _render_profile_section(request, user, error=error)
+    User.objects.filter(pk=user.pk).update(first_name=payload.first_name)
+    user.first_name = payload.first_name
     return _render_profile_section(request, user, success="Imię zostało zaktualizowane.", refresh_nav=True)
 
 
@@ -62,13 +63,12 @@ def update_password(
     confirm_password: str = Form(...),
 ):
     user = get_authenticated_user(request)
-    if not user.check_password(current_password):
+    payload, error = validate_profile_password(current_password, new_password, confirm_password)
+    if error:
+        return _render_profile_section(request, user, error=error)
+    if not user.check_password(payload.current_password):
         return _render_profile_section(request, user, error="Aktualne hasło jest nieprawidłowe.")
-    if new_password != confirm_password:
-        return _render_profile_section(request, user, error="Nowe hasła nie są identyczne.")
-    if len(new_password) < 8:
-        return _render_profile_section(request, user, error="Hasło musi mieć co najmniej 8 znaków.")
-    user.set_password(new_password)
+    user.set_password(payload.new_password)
     user.save()
     return _render_profile_section(request, user, success="Hasło zostało zmienione.")
 
