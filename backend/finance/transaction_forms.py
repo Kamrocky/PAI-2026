@@ -5,10 +5,9 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.utils import timezone
 from pydantic import ValidationError as PydanticValidationError
 
-from .api_accounts import get_user_account
 from .models import Category
+from .queries import get_user_account_or_404, get_user_category
 from .schemas import TransactionIn
-from .transaction_service import get_user_category
 
 
 def parse_optional_int(value: str) -> int | None:
@@ -114,7 +113,7 @@ def validate_transaction_form(
 
 
 def apply_transaction_payload(user, payload: TransactionIn):
-    account = get_user_account(user, payload.account_id)
+    account = get_user_account_or_404(user, payload.account_id)
     category = get_user_category(user, payload.category_id)
     data = payload.model_dump()
     return account, category, data

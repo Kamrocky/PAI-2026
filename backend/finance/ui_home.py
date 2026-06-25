@@ -3,9 +3,8 @@ from django.template.loader import render_to_string
 from ninja import Form, Router
 
 from .account_forms import validate_account_create, validate_account_edit
-from .api_accounts import get_user_account
-from .api_transactions import get_user_transaction
 from .auth_utils import get_authenticated_user
+from .queries import get_user_account_or_404, get_user_transaction_or_404
 from .home_service import (
     HOME_ACCOUNT_SESSION_KEY,
     get_home_context,
@@ -18,11 +17,9 @@ from .home_service import (
 from .models import Account
 from .transaction_forms import apply_transaction_payload, validate_transaction_form
 from .transaction_service import create_transaction, delete_transaction, update_transaction
-from .ui_utils import inject_oob_outer_swap
+from .ui_utils import MODAL_CLOSE_HTML, inject_oob_outer_swap
 
 router = Router(tags=["home-ui"])
-
-MODAL_CLOSE_HTML = '<div id="home-modal" hx-swap-oob="innerHTML"></div>'
 
 
 def render_home_content(request, user) -> str:
@@ -142,7 +139,7 @@ def create_account_ui(
 @router.get("/accounts/{account_id}/delete-confirm")
 def delete_account_confirm_modal(request, account_id: int):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     return HttpResponse(
         render_home_modal(
             request,
@@ -156,7 +153,7 @@ def delete_account_confirm_modal(request, account_id: int):
 @router.get("/accounts/{account_id}/edit")
 def edit_account_modal(request, account_id: int):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     return HttpResponse(
         render_home_modal(
             request,
@@ -174,7 +171,7 @@ def update_account_ui(
     name: str = Form(...),
 ):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     payload, error = validate_account_edit(name)
     if error:
         return HttpResponse(
@@ -195,7 +192,7 @@ def update_account_ui(
 @router.delete("/accounts/{account_id}")
 def delete_account_ui(request, account_id: int):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     clear_active_account_if_matches(request, account_id)
     account.delete()
     return render_home_refresh_response(request, user)
@@ -287,7 +284,7 @@ def transaction_detail(request, transaction_id: int):
     account = _get_active_account_or_404(request, user)
     if isinstance(account, HttpResponse):
         return account
-    txn = get_user_transaction(user, transaction_id)
+    txn = get_user_transaction_or_404(user, transaction_id)
     if txn.account_id != account.pk:
         return HttpResponse("Transakcja nie należy do aktywnego konta.", status=404)
     return HttpResponse(
@@ -306,7 +303,7 @@ def edit_transaction_modal(request, transaction_id: int):
     account = _get_active_account_or_404(request, user)
     if isinstance(account, HttpResponse):
         return account
-    txn = get_user_transaction(user, transaction_id)
+    txn = get_user_transaction_or_404(user, transaction_id)
     if txn.account_id != account.pk:
         return HttpResponse("Transakcja nie należy do aktywnego konta.", status=404)
     return HttpResponse(
@@ -323,7 +320,7 @@ def edit_transaction_modal(request, transaction_id: int):
 def delete_transaction_confirm_modal(request, transaction_id: int, back: str = ""):
     user = get_authenticated_user(request)
     account = resolve_active_account(request, user)
-    txn = get_user_transaction(user, transaction_id)
+    txn = get_user_transaction_or_404(user, transaction_id)
     if account is None or txn.account_id != account.pk:
         return HttpResponse("Transakcja nie istnieje.", status=404)
     return HttpResponse(
@@ -352,7 +349,7 @@ def update_transaction_ui(
 ):
     user = get_authenticated_user(request)
     account = resolve_active_account(request, user)
-    txn = get_user_transaction(user, transaction_id)
+    txn = get_user_transaction_or_404(user, transaction_id)
     if account is None or txn.account_id != account.pk:
         return HttpResponse("Transakcja nie istnieje.", status=404)
 
@@ -398,7 +395,7 @@ def update_transaction_ui(
 def delete_transaction_ui(request, transaction_id: int):
     user = get_authenticated_user(request)
     account = resolve_active_account(request, user)
-    txn = get_user_transaction(user, transaction_id)
+    txn = get_user_transaction_or_404(user, transaction_id)
     if account is None or txn.account_id != account.pk:
         return HttpResponse("Transakcja nie istnieje.", status=404)
     delete_transaction(txn)

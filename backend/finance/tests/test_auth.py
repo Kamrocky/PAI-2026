@@ -84,6 +84,8 @@ class AuthAPITest(TestCase):
         self.assertIn('id="home-content"', content)
         self.assertIn('href="/profile/"', content)
         self.assertIn("Jan", content)
+        self.assertIn("Wyloguj", content)
+        self.assertIn('id="user-info" hx-swap-oob="innerHTML"', content)
 
     def test_login_wrong_password(self):
         User.objects.create_user(
@@ -112,7 +114,10 @@ class AuthAPITest(TestCase):
         user = User.objects.get(username="nowy@example.com")
         self.assertEqual(user.email, "nowy@example.com")
         self.assertEqual(user.first_name, "Anna")
-        self.assertIn("Anna", response.content.decode())
+        content = response.content.decode()
+        self.assertIn("Anna", content)
+        self.assertIn("Wyloguj", content)
+        self.assertIn('id="user-info" hx-swap-oob="innerHTML"', content)
 
     def test_register_password_mismatch(self):
         response = self.client.post(

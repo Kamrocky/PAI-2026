@@ -3,6 +3,8 @@ from django.shortcuts import render
 from .auth_utils import get_display_name
 from .categories_service import get_categories_context
 from .home_service import get_home_context
+from .profile_service import get_profile_context
+from .stats_service import get_stats_context
 
 AUTH_SHELL_TEMPLATE = "auth.html"
 VIEW_TEMPLATES = {
@@ -34,6 +36,16 @@ def _render_authenticated_view(request, view_name: str, extra_context: dict | No
             "categories.html",
             {**_authenticated_context(request), **get_categories_context(request.user)},
         )
+
+    if view_name == "stats":
+        return render(request, "stats.html", get_stats_context(request, request.user))
+
+    if view_name == "profile":
+        ctx = {
+            **get_profile_context(request.user),
+            **(extra_context or {}),
+        }
+        return render(request, "profile.html", ctx)
 
     ctx = {**_authenticated_context(request), **(extra_context or {})}
     return render(request, VIEW_TEMPLATES[view_name], ctx)

@@ -4,7 +4,7 @@
   <div class="mx-auto max-w-lg space-y-6">
 
     <!-- Imię -->
-    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+    <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
       <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Imię</h3>
       <form hx-post="/api/ui/profile/name" hx-target="#profile-section" hx-swap="outerHTML">
         {% csrf_token %}
@@ -15,11 +15,11 @@
             value="{{ user.first_name }}"
             placeholder="Twoje imię"
             required
-            class="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-zinc-500 focus:outline-none"
+            class="w-full rounded-lg border border-white/10 bg-zinc-950/40 px-3 py-2 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
           />
           <button
             type="submit"
-            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+            class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-emerald-400"
           >
             Zapisz imię
           </button>
@@ -28,18 +28,18 @@
     </div>
 
     <!-- E-mail (tylko do odczytu) -->
-    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+    <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
       <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Adres e-mail</h3>
       <p class="text-sm text-zinc-300">{{ user.email }}</p>
     </div>
 
     <!-- Hasło -->
-    <div class="rounded-xl border border-zinc-700 bg-zinc-800 p-5">
+    <div class="rounded-xl border border-white/10 bg-zinc-950/30 p-5">
       <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-400">Zmiana hasła</h3>
       <form hx-post="/api/ui/profile/password" hx-target="#profile-section" hx-swap="outerHTML">
         {% csrf_token %}
         <div class="space-y-3">
-          {% with pw_class="w-full rounded-lg border border-zinc-700 bg-zinc-900 py-2 pl-3 pr-10 text-zinc-100 focus:border-zinc-500 focus:outline-none" %}
+          {% with pw_class="w-full rounded-lg border border-white/10 bg-zinc-950/40 py-2 pl-3 pr-10 text-zinc-100 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20" %}
           <div class="relative password-wrapper">
             <input type="password" name="current_password" placeholder="Aktualne hasło" required class="{{ pw_class }}" />
             {% include "partials/ui/password_toggle_btn.html" %}
@@ -55,7 +55,7 @@
           {% endwith %}
           <button
             type="submit"
-            class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+            class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 transition-colors hover:bg-emerald-400"
           >
             Zmień hasło
           </button>
@@ -64,8 +64,8 @@
     </div>
 
     <!-- Wyczyść dane -->
-    <div class="rounded-xl border border-rose-500/20 bg-rose-950/20 p-5">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-300">Wyczyść dane</h3>
+    <div class="rounded-xl border border-rose-400/30 bg-rose-500/10 p-5">
+      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-200">Wyczyść dane</h3>
       <p class="mb-4 text-sm leading-relaxed text-zinc-400">
         Usuń wszystkie konta, transakcje i kategorie. Twoje konto użytkownika pozostanie aktywne.
       </p>
@@ -74,15 +74,15 @@
         hx-get="/api/ui/profile/clear-data/confirm"
         hx-target="#home-modal"
         hx-swap="innerHTML"
-        class="rounded-lg border border-rose-500/40 bg-rose-600/20 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-600/30"
+        class="rounded-lg border border-rose-400/40 bg-rose-500/15 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-500/25"
       >
         Wyczyść wszystkie dane
       </button>
     </div>
 
     <!-- Usuń konto -->
-    <div class="rounded-xl border border-rose-500/30 bg-rose-950/30 p-5">
-      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-300">Usuń konto</h3>
+    <div class="rounded-xl border border-rose-400/30 bg-rose-500/10 p-5">
+      <h3 class="mb-2 text-sm font-semibold uppercase tracking-wider text-rose-200">Usuń konto</h3>
       <p class="mb-4 text-sm leading-relaxed text-zinc-400">
         Trwale usuń konto użytkownika wraz ze wszystkimi danymi.
       </p>
@@ -91,7 +91,7 @@
         hx-get="/api/ui/profile/delete-account/confirm"
         hx-target="#home-modal"
         hx-swap="innerHTML"
-        class="rounded-lg border border-rose-500/40 bg-rose-600/20 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-600/30"
+        class="rounded-lg border border-rose-400/40 bg-rose-500/15 px-4 py-2 text-sm font-medium text-rose-200 transition-colors hover:bg-rose-500/25"
       >
         Usuń konto na zawsze
       </button>

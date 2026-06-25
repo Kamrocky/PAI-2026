@@ -4,12 +4,13 @@ from decimal import Decimal
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.paginator import Paginator
-from django.db.models import Sum
 from django.http import HttpRequest
 from django.utils import timezone
 
+from .aggregation_utils import sum_income_and_expenses
 from .constants import ALLOWED_CURRENCIES, CURRENCY_LABELS
 from .models import Account, Category, Transaction
+from .queries import get_user_accounts
 
 HOME_ACCOUNT_SESSION_KEY = "home_account_id"
 HOME_SLOT_NEW = "new"
@@ -125,10 +126,6 @@ def get_home_transactions_context(
         "transactions_expanded": expanded,
         "categories": get_user_categories(user),
     }
-
-
-def get_user_accounts(user: AbstractBaseUser) -> list[Account]:
-    return list(Account.objects.filter(user=user).order_by("id"))
 
 
 def set_home_slot(request: HttpRequest, slot: int | str) -> None:
@@ -264,18 +261,10 @@ def go_to_carousel_slot(request: HttpRequest, user: AbstractBaseUser, slot_index
         set_home_slot(request, accounts[slot_index].pk)
 
 
-def _sum_income_and_expenses(transactions) -> tuple[Decimal, Decimal]:
-    income = transactions.filter(amount__gt=0).aggregate(total=Sum("amount"))["total"]
-    expenses_raw = transactions.filter(amount__lt=0).aggregate(total=Sum("amount"))["total"]
-    income_total = income or Decimal("0.00")
-    expenses_total = abs(expenses_raw or Decimal("0.00"))
-    return income_total, expenses_total
-
-
 def get_account_period_stats(account: Account, period_days: int = PERIOD_DAYS) -> PeriodStats:
     since = timezone.now() - timedelta(days=period_days)
     transactions = Transaction.objects.filter(account=account, date__gte=since)
-    income, expenses = _sum_income_and_expenses(transactions)
+    income, expenses = sum_income_and_expenses(transactions)
     return PeriodStats(income=income, expenses=expenses)
 
 
@@ -302,8 +291,8 @@ def get_month_over_month_comparison(account: Account) -> MonthComparison:
         date__lt=current_start,
     )
 
-    current_income, current_expenses = _sum_income_and_expenses(current_transactions)
-    previous_income, previous_expenses = _sum_income_and_expenses(previous_transactions)
+    current_income, current_expenses = sum_income_and_expenses(current_transactions)
+    previous_income, previous_expenses = sum_income_and_expenses(previous_transactions)
 
     def percent_change(current: Decimal, previous: Decimal) -> Decimal | None:
         if previous == 0:

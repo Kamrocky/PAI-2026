@@ -3,16 +3,10 @@ from ninja.errors import HttpError
 
 from .auth_utils import get_authenticated_user
 from .models import Account
+from .queries import get_user_account_or_404
 from .schemas import AccountIn, AccountOut, AccountUpdate
 
 router = Router(tags=["accounts"])
-
-
-def get_user_account(user, account_id: int) -> Account:
-    try:
-        return Account.objects.get(pk=account_id, user=user)
-    except Account.DoesNotExist:
-        raise HttpError(404, "Konto nie istnieje.")
 
 
 @router.get("", response=list[AccountOut])
@@ -30,13 +24,13 @@ def create_account(request, payload: AccountIn):
 @router.get("/{account_id}", response=AccountOut)
 def get_account(request, account_id: int):
     user = get_authenticated_user(request)
-    return get_user_account(user, account_id)
+    return get_user_account_or_404(user, account_id)
 
 
 @router.put("/{account_id}", response=AccountOut)
 def update_account(request, account_id: int, payload: AccountIn):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     account.name = payload.name
     account.save(update_fields=["name"])
     return account
@@ -45,7 +39,7 @@ def update_account(request, account_id: int, payload: AccountIn):
 @router.patch("/{account_id}", response=AccountOut)
 def partial_update_account(request, account_id: int, payload: AccountUpdate):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     updates = payload.model_dump(exclude_unset=True)
     if not updates:
         raise HttpError(400, "Brak pól do aktualizacji.")
@@ -58,6 +52,6 @@ def partial_update_account(request, account_id: int, payload: AccountUpdate):
 @router.delete("/{account_id}", response={204: None})
 def delete_account(request, account_id: int):
     user = get_authenticated_user(request)
-    account = get_user_account(user, account_id)
+    account = get_user_account_or_404(user, account_id)
     account.delete()
     return 204, None
