@@ -12,15 +12,6 @@ def adjust_account_balance(account_id: int, delta: Decimal) -> None:
     Account.objects.filter(pk=account_id).update(balance=F("balance") + delta)
 
 
-def get_user_category(user, category_id: int | None) -> Category | None:
-    if category_id is None:
-        return None
-    try:
-        return Category.objects.get(pk=category_id, user=user)
-    except Category.DoesNotExist:
-        return None
-
-
 @db_transaction.atomic
 def create_transaction(
     *,

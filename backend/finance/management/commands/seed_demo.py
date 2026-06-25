@@ -7,7 +7,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction as db_transaction
 from django.utils import timezone
 
-from finance.models import Account, Category, Transaction
+from finance.models import Account, Category
+from finance.profile_service import clear_user_finance_data
 from finance.transaction_service import create_transaction
 
 RANDOM_SEED = 2026
@@ -95,7 +96,7 @@ class Command(BaseCommand):
         random.seed(RANDOM_SEED)
 
         with db_transaction.atomic():
-            self._clear_user_data(user)
+            clear_user_finance_data(user)
             categories = self._create_categories(user)
             accounts = self._create_accounts(user)
             count = self._create_transactions(accounts, categories, months)
@@ -107,11 +108,6 @@ class Command(BaseCommand):
                 f"{len(accounts)} konta, {num_categories} kategorii, {count} transakcji."
             )
         )
-
-    def _clear_user_data(self, user):
-        Transaction.objects.filter(account__user=user).delete()
-        Account.objects.filter(user=user).delete()
-        Category.objects.filter(user=user).delete()
 
     def _create_categories(self, user):
         from finance.constants import CATEGORY_COLOR_PALETTE

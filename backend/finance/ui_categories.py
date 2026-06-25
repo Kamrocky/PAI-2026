@@ -2,17 +2,15 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from ninja import Form, Router
 
-from .api_categories import get_user_category
 from .auth_utils import get_authenticated_user
 from .categories_service import get_categories_context
 from .category_forms import validate_category_form
 from .constants import DEFAULT_CATEGORY_COLOR
 from .models import Category
-from .ui_utils import inject_oob_outer_swap
+from .queries import get_user_category_or_404
+from .ui_utils import MODAL_CLOSE_HTML, inject_oob_outer_swap
 
 router = Router(tags=["categories-ui"])
-
-MODAL_CLOSE_HTML = '<div id="home-modal" hx-swap-oob="innerHTML"></div>'
 
 
 def render_categories_content(
@@ -105,7 +103,7 @@ def create_category_ui(
 @router.get("/{category_id}/delete-confirm")
 def delete_category_confirm_modal(request, category_id: int):
     user = get_authenticated_user(request)
-    category = get_user_category(user, category_id)
+    category = get_user_category_or_404(user, category_id)
     return HttpResponse(
         render_categories_modal(
             request,
@@ -119,7 +117,7 @@ def delete_category_confirm_modal(request, category_id: int):
 @router.get("/{category_id}/edit")
 def edit_category_modal(request, category_id: int):
     user = get_authenticated_user(request)
-    category = get_user_category(user, category_id)
+    category = get_user_category_or_404(user, category_id)
     return HttpResponse(
         render_categories_modal(
             request,
@@ -138,7 +136,7 @@ def update_category_ui(
     color: str = Form(DEFAULT_CATEGORY_COLOR),
 ):
     user = get_authenticated_user(request)
-    category = get_user_category(user, category_id)
+    category = get_user_category_or_404(user, category_id)
     payload, error = validate_category_form(name, color, "true" if category.is_income else "")
     if error:
         return HttpResponse(
@@ -160,6 +158,6 @@ def update_category_ui(
 @router.delete("/{category_id}")
 def delete_category_ui(request, category_id: int):
     user = get_authenticated_user(request)
-    category = get_user_category(user, category_id)
+    category = get_user_category_or_404(user, category_id)
     category.delete()
     return render_categories_refresh_response(request, user, success="Kategoria została usunięta.")
