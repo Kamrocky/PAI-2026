@@ -144,6 +144,15 @@
         closeAllCurrencyPickers();
         closeHomeModal();
       });
+
+      function togglePassword(btn) {
+        const wrapper = btn.closest(".password-wrapper");
+        const input = wrapper.querySelector("input");
+        const isHidden = input.type === "password";
+        input.type = isHidden ? "text" : "password";
+        wrapper.querySelector(".icon-eye").classList.toggle("hidden", isHidden);
+        wrapper.querySelector(".icon-eye-off").classList.toggle("hidden", !isHidden);
+      }
     </script>
     {% block body_end %}{% endblock %}
   </body>

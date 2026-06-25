@@ -11,16 +11,10 @@
           class="mt-6 space-y-4 text-left">
         {% csrf_token %}
         <input type="hidden" name="email" value="{{ email }}">
-        <label class="block">
+        <div class="block">
             <span class="mb-1 block text-xs font-medium text-zinc-300">Hasło</span>
-            <input type="password"
-                   name="password"
-                   placeholder="Twoje hasło"
-                   autocomplete="current-password"
-                   autofocus
-                   required
-                   class="w-full rounded-lg border border-white/10 bg-zinc-950/40 p-2 text-zinc-100 placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/20">
-        </label>
+            {% include "partials/ui/password_input.html" with name="password" placeholder="Twoje hasło" autocomplete="current-password" required=True autofocus=True %}
+        </div>
         <button type="submit"
                 class="w-full rounded-lg bg-emerald-500 px-4 py-2 font-medium text-zinc-950 hover:bg-emerald-400">
             Zaloguj się
