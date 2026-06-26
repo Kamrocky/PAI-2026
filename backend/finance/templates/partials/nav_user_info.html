@@ -1,3 +1,49 @@
-<div id="user-info" class="flex items-center gap-4 text-sm text-zinc-200">
-  {% include "partials/nav_user_info_inner.html" %}
+<div id="user-info" class="text-sm text-zinc-200">
+  <!-- Desktop / tablet: przyciski widoczne w jednej linii -->
+  <div class="hidden items-center gap-4 sm:flex">
+    {% include "partials/nav_user_info_inner.html" %}
+  </div>
+
+  <!-- Mobile: hamburger z rozwijanym menu (czysty CSS, bez JS) -->
+  <div class="relative sm:hidden">
+    <input type="checkbox" id="nav-menu-toggle" class="peer sr-only" />
+
+    <label
+      for="nav-menu-toggle"
+      aria-label="Menu"
+      class="inline-flex cursor-pointer items-center rounded-lg border border-white/10 bg-white/5 p-2 text-zinc-200 hover:bg-white/10"
+    >
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </label>
+
+    <!-- Tło zamykające menu po kliknięciu poza nim -->
+    <label
+      for="nav-menu-toggle"
+      aria-hidden="true"
+      class="fixed inset-0 z-40 hidden cursor-default peer-checked:block"
+    ></label>
+
+    <!-- Rozwijane menu -->
+    <div
+      class="absolute right-0 z-50 mt-2 hidden w-48 flex-col gap-2 rounded-xl border border-white/10 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-sm peer-checked:flex"
+    >
+      <a
+        href="{% url 'profile' %}"
+        class="block rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center font-medium text-zinc-100 hover:bg-white/10"
+      >
+        {{ display_name }}
+      </a>
+      <form hx-post="/api/auth/logout" hx-target="#page-content" hx-swap="innerHTML">
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-zinc-200 hover:bg-white/10"
+        >
+          Wyloguj
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
